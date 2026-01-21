@@ -1,0 +1,52 @@
+name: K3s cluster setup
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Choose an action
+        type: choice
+        default: create
+        required: true
+        options: [create, delete]
+
+jobs:
+  k3s-setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          cat > ~/.ssh/config << 'EOF'
+          Host *
+          StrictHostKeyChecking no
+          EOF
+
+      - name: Create cluster
+        if: github.event.inputs.action == 'create'
+        env:
+          MASTER_IP: ${{ secrets.MASTER_IP }}
+          NODE1_IP: ${{ secrets.NODE1_IP }}
+          NODE2_IP: ${{ secrets.NODE2_IP }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          chmod +x ./scripts/create-cluster.sh
+          echo "Executing create shell script..."
+          ./scripts/create-cluster.sh
+
+      - name: Delete cluster
+        if: github.event.inputs.action == 'delete'
+        env:
+          MASTER_IP: ${{ secrets.MASTER_IP }}
+          NODE1_IP: ${{ secrets.NODE1_IP }}
+          NODE2_IP: ${{ secrets.NODE2_IP }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          chmod +x ./scripts/delete-cluster.sh
+          echo "Executing delete shell script..."
+          ./scripts/delete-cluster.sh
