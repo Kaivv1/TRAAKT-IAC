@@ -8,8 +8,22 @@ on:
         type: choice
         default: create
         required: true
-        options: [create, delete]
-
+        options: [install, destroy]
+      master_ip:
+        description: Choose a master ip
+        type: string
+        required: true
+        default: ""
+      agents_ips:
+        description: Choose agent ips (comma separated ip1,ip2...)
+        type: string
+        required: true
+        default: ""
+      ssh_user:
+        description: Choose a ssh user
+        type: string
+        required: true
+        default: ""
 jobs:
   k3s-setup:
     runs-on: ubuntu-latest
@@ -27,26 +41,27 @@ jobs:
           StrictHostKeyChecking no
           EOF
 
-      - name: Create cluster
-        if: github.event.inputs.action == 'create'
-        env:
-          MASTER_IP: ${{ secrets.MASTER_IP }}
-          NODE1_IP: ${{ secrets.NODE1_IP }}
-          NODE2_IP: ${{ secrets.NODE2_IP }}
-          SSH_USER: ${{ secrets.SSH_USER }}
+      - name: Setup cluster
+        if: github.event.inputs.action == 'install'
         run: |
           chmod +x ./scripts/create-cluster.sh
           echo "Executing create shell script..."
-          ./scripts/create-cluster.sh
+          ./scripts/create-cluster.sh \
+            ${{ github.event.inputs.master_ip }} \
+            ${{ github.event.inputs.agents_ips }} \
+            ${{ github.event.inputs.ssh_user }}
 
-      - name: Delete cluster
-        if: github.event.inputs.action == 'delete'
-        env:
-          MASTER_IP: ${{ secrets.MASTER_IP }}
-          NODE1_IP: ${{ secrets.NODE1_IP }}
-          NODE2_IP: ${{ secrets.NODE2_IP }}
-          SSH_USER: ${{ secrets.SSH_USER }}
+      - name: Destroy cluster
+        if: github.event.inputs.action == 'destroy'
         run: |
           chmod +x ./scripts/delete-cluster.sh
           echo "Executing delete shell script..."
-          ./scripts/delete-cluster.sh
+          ./scripts/delete-cluster.sh \
+            ${{ github.event.inputs.master_ip }} \
+            ${{ github.event.inputs.agents_ips }} \
+            ${{ github.event.inputs.ssh_user }}
+
+      - name: Clean ssh
+        if: always()
+        run: |
+          rm -rf .ssh
