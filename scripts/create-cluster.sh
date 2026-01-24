@@ -8,7 +8,6 @@ SSH_USER=$3
 
 IFS=',' read -ra AGENT_IPS <<< "$AGENT_IPS_STR"
 
-# echo ${AGENT_IPS[@]}
 get_reservation_calculations() {
 cat << 'EOF'
     #!/bin/bash
@@ -64,11 +63,10 @@ ENDSSH
 }
 
 for i in "${!AGENT_IPS[@]}"; do
-    local index=$((i+1))
-    echo "$index"
+    NAME="node$(printf '%02d' $((i+1)))"
+    NODE_IP="${AGENT_IPS[$i]}"
+
+    install_agent $NODE_IP $NAME
 done
 
-# install_agent $NODE1_IP "node01"
-# install_agent $NODE2_IP "node02"
-
-# echo "Cluster setup is ready"
+echo "Cluster setup is ready"
