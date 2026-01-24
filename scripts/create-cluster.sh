@@ -64,7 +64,7 @@ ENDSSH
 }
 
 for i in "${AGENT_IPS[@]}"; do
-    local index=$((i + 1))
+    local index=$((i+1))
     echo "$index"
 done
 
