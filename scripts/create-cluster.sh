@@ -63,7 +63,7 @@ ENDSSH
     echo "$NODE_NAME agent is installed and joined master server"
 }
 
-for i in "${AGENT_IPS[@]}"; do
+for i in "${!AGENT_IPS[@]}"; do
     local index=$((i+1))
     echo "$index"
 done
