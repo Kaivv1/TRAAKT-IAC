@@ -26,7 +26,6 @@ destroy_node() {
             /usr/local/bin/k3s-agent-uninstall.sh
         fi
 
-        echo "Cleaning directories..."
         rm -rf ~/.kube
 ENDSSH
     then
