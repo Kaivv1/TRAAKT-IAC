@@ -2,10 +2,11 @@
 
 set -euo pipefail
 
-MASTER_IP="${MASTER_IP}"
-NODE1_IP="${NODE1_IP}"
-NODE2_IP="${NODE2_IP}"
-SSH_USER="${SSH_USER}"
+MASTER_IP=$1
+AGENT_IPS_STR=$2
+SSH_USER=$3
+
+IFS=',' read -ra AGENT_IPS <<< "$AGENT_IPS_STR"
 
 destroy_node() {
     local IP=$1
@@ -37,9 +38,13 @@ ENDSSH
     fi
 }
 
-destroy_node "$NODE1_IP" "node01"
-sleep 1
-destroy_node "$NODE2_IP" "node02"
-sleep 1
-destroy_node "$MASTER_IP" "master"
+for i in "${!AGENT_IPS[@]}"; do
+    NAME="node$(printf '%02d' $((i+1)))"
+    NODE_IP="${AGENT_IPS[$i]}"
+
+    destroy_node $NODE_IP $NAME
+    sleep 1
+done
+
+destroy_node $MASTER_IP "master"
 
