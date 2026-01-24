@@ -14,7 +14,7 @@ destroy_node() {
 
     echo "Cleaning $NODE_NAME..."
 
-    if ssh -o ConnectTimeout=10 $SSH_USER@$IP bash << 'ENDSSH' 2>/dev/null
+    if ssh -o ConnectTimeout=10 $SSH_USER@$IP bash << 'ENDSSH' >/dev/null 2>&1
         set -e
         if [ -f /usr/local/bin/k3s-uninstall.sh ]; then
             echo "Uninstalling k3s server..."
