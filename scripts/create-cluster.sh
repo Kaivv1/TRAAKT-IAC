@@ -6,15 +6,9 @@ MASTER_IP=$1
 AGENT_IPS_STR=$2
 SSH_USER=$3
 
-
 IFS=',' read -ra AGENT_IPS <<< "$AGENT_IPS_STR"
 
 # echo ${AGENT_IPS[@]}
-
-# echo "$MASTER_IP"
-# echo "$AGENT_IPS"
-# echo "$SSH_USER"
-
 get_reservation_calculations() {
 cat << 'EOF'
     #!/bin/bash
@@ -48,26 +42,31 @@ echo "Retrieving token..."
 TOKEN=$(ssh $SSH_USER@$MASTER_IP "cat /var/lib/rancher/k3s/server/node-token")
 echo "Token retrieved"
 
-# install_agent() {
-#     local NODE_IP=$1
-#     local NODE_NAME=$2
+install_agent() {
+    local NODE_IP=$1
+    local NODE_NAME=$2
 
-#     echo "Installing k3s agent $NODE_NAME..."
+    echo "Installing k3s agent $NODE_NAME..."
 
-#     ssh $SSH_USER@$NODE_IP bash << ENDSSH
-#     $(get_reservation_calculations)
-#     curl -sfL https://get.k3s.io | K3S_URL=https://$MASTER_IP:6443 \
-#         K3S_TOKEN=$TOKEN \
-#         INSTALL_K3S_EXEC="agent \
-#             --node-name=${NODE_NAME} \
-#             --kubelet-arg=kube-reserved=cpu=\${KUBE_CPU}m,memory=\${KUBE_MEM}Mi \
-#             --kubelet-arg=system-reserved=cpu=\${SYSTEM_CPU}m,memory=\${SYSTEM_MEM}Mi \
-#             --kubelet-arg=eviction-hard=memory.available<\${EVICTION_MEM}Mi,nodefs.available<10%" sh -
-#     sleep 5
-# ENDSSH
+    ssh $SSH_USER@$NODE_IP bash << ENDSSH
+    $(get_reservation_calculations)
+    curl -sfL https://get.k3s.io | K3S_URL=https://$MASTER_IP:6443 \
+        K3S_TOKEN=$TOKEN \
+        INSTALL_K3S_EXEC="agent \
+            --node-name=${NODE_NAME} \
+            --kubelet-arg=kube-reserved=cpu=\${KUBE_CPU}m,memory=\${KUBE_MEM}Mi \
+            --kubelet-arg=system-reserved=cpu=\${SYSTEM_CPU}m,memory=\${SYSTEM_MEM}Mi \
+            --kubelet-arg=eviction-hard=memory.available<\${EVICTION_MEM}Mi,nodefs.available<10%" sh -
+    sleep 5
+ENDSSH
 
-#     echo "$NODE_NAME agent is installed and joined master server"
-# }
+    echo "$NODE_NAME agent is installed and joined master server"
+}
+
+for i in "${AGENT_IPS[@]}"; do
+    local index=$((i + 1))
+    echo "$index"
+done
 
 # install_agent $NODE1_IP "node01"
 # install_agent $NODE2_IP "node02"
