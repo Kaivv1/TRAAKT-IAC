@@ -3,45 +3,50 @@
 set -euo pipefail
 
 MASTER_IP=$1
-AGENT_IPS=$2
+AGENT_IPS_STR=$2
 SSH_USER=$3
 
-echo "$MASTER_IP"
-echo "$AGENT_IPS"
-echo "$SSH_USER"
 
-# get_reservation_calculations() {
-# cat << 'EOF'
-#     #!/bin/bash
-#     echo "Calculating variables..."
-#     TOTAL_CPU=$(nproc)
-#     TOTAL_MEM_MI=$(($(grep MemTotal /proc/meminfo | awk '{print $2}') / 1024))
+IFS=',' read -ra AGENT_IPS <<< "$AGENT_IPS_STR"
 
-#     export KUBE_CPU=$((TOTAL_CPU * 1000 * 75 / 1000))
-#     export SYSTEM_CPU=$((TOTAL_CPU * 1000 * 75 / 1000))
-#     export KUBE_MEM=$((TOTAL_MEM_MI * 75 / 1000))
-#     export SYSTEM_MEM=$((TOTAL_MEM_MI * 75 / 1000))
-#     export EVICTION_MEM=$((TOTAL_MEM_MI * 5 / 100))
+# echo ${AGENT_IPS[@]}
 
-#     echo "${TOTAL_CPU} cores, ${TOTAL_MEM_MI}Mi | Reserved: $((KUBE_CPU+SYSTEM_CPU))m, $((KUBE_MEM+SYSTEM_MEM))Mi (15%)"
-# EOF
-# }
+# echo "$MASTER_IP"
+# echo "$AGENT_IPS"
+# echo "$SSH_USER"
 
-# echo "Installing k3s master server..."
-# ssh $SSH_USER@$MASTER_IP bash << ENDSSH
-#     $(get_reservation_calculations)
-#     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server \
-#         --node-name=master
-#         --kubelet-arg=kube-reserved=cpu=\${KUBE_CPU}m,memory=\${KUBE_MEM}Mi \
-#         --kubelet-arg=system-reserved=cpu=\${SYSTEM_CPU}m,memory=\${SYSTEM_MEM}Mi \
-#         --kubelet-arg=eviction-hard=memory.available<\${EVICTION_MEM}Mi,nodefs.available<10%" sh -
-#     sleep 5
-# ENDSSH
-# echo "Master server is installed"
+get_reservation_calculations() {
+cat << 'EOF'
+    #!/bin/bash
+    echo "Calculating variables..."
+    TOTAL_CPU=$(nproc)
+    TOTAL_MEM_MI=$(($(grep MemTotal /proc/meminfo | awk '{print $2}') / 1024))
 
-# echo "Retrieving token..."
-# TOKEN=$(ssh $SSH_USER@$MASTER_IP "cat /var/lib/rancher/k3s/server/node-token")
-# echo "Token retrieved"
+    export KUBE_CPU=$((TOTAL_CPU * 1000 * 75 / 1000))
+    export SYSTEM_CPU=$((TOTAL_CPU * 1000 * 75 / 1000))
+    export KUBE_MEM=$((TOTAL_MEM_MI * 75 / 1000))
+    export SYSTEM_MEM=$((TOTAL_MEM_MI * 75 / 1000))
+    export EVICTION_MEM=$((TOTAL_MEM_MI * 5 / 100))
+
+    echo "${TOTAL_CPU} cores, ${TOTAL_MEM_MI}Mi | Reserved: $((KUBE_CPU+SYSTEM_CPU))m, $((KUBE_MEM+SYSTEM_MEM))Mi (15%)"
+EOF
+}
+
+echo "Installing k3s master server..."
+ssh $SSH_USER@$MASTER_IP bash << ENDSSH
+    $(get_reservation_calculations)
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server \
+        --node-name=master
+        --kubelet-arg=kube-reserved=cpu=\${KUBE_CPU}m,memory=\${KUBE_MEM}Mi \
+        --kubelet-arg=system-reserved=cpu=\${SYSTEM_CPU}m,memory=\${SYSTEM_MEM}Mi \
+        --kubelet-arg=eviction-hard=memory.available<\${EVICTION_MEM}Mi,nodefs.available<10%" sh -
+    sleep 5
+ENDSSH
+echo "Master server is installed"
+
+echo "Retrieving token..."
+TOKEN=$(ssh $SSH_USER@$MASTER_IP "cat /var/lib/rancher/k3s/server/node-token")
+echo "Token retrieved"
 
 # install_agent() {
 #     local NODE_IP=$1
