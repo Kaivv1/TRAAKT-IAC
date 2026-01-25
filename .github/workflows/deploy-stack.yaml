@@ -37,6 +37,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Setup pulumi
+      - uses: pulumi/actions@v6
+
       - name: Setup ssh
         run: |
           mkdir -p ~/.ssh
@@ -50,9 +58,22 @@ jobs:
       - name: Create kube config
         run: |
           SSH_USER=${{ github.event.inputs.ssh_user }}
-          MASTER_IP=${{ github.event.inputs.master_ip  }}
+          MASTER_IP=${{ github.event.inputs.master_ip }}
           mkdir -p ~/.kube
           ssh $SSH_USER@$MASTER_IP cat "/etc/rancher/k3s/k3s.yaml" > ~/.kube/config
           chmod 600 ~/.kube/config
           sed -i "s/127.0.0.1/$MASTER_IP/g" ~/.kube/config
-          cat ~/.kube/config
+
+      - name: Install dependencies
+        working-directory: ./infra
+        run: npm install
+
+      - name: Pulumi login
+        run: pulumi login --local
+
+      - name: Choose stack
+        run: |
+          pulumi stack select ${{ github.event.inputs.environment }} --create
+
+      - name: Deploy stack
+        run: pulumi up --yes
