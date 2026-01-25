@@ -50,7 +50,7 @@ jobs:
       - name: Create kube config
         run: |
           SSH_USER=${{ github.event.inputs.ssh_user }}
-          MASTER_IP={{ github.event.inputs.master_ip  }}
+          MASTER_IP=${{ github.event.inputs.master_ip  }}
           mkdir -p ~/.kube
           ssh $SSH_USER@$MASTER_IP cat "/etc/rancher/k3s/k3s.yaml" > ~/.kube/config
           chmod 600 ~/.kube/config
