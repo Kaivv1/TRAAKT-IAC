@@ -95,6 +95,7 @@ jobs:
         run: pulumi login --local
 
       - name: Choose stack
+        working-directory: ./infra
         run: |
           pulumi stack select ${{ github.event.inputs.environment }} --create
 
