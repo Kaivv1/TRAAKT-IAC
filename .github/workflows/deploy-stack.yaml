@@ -91,4 +91,6 @@ jobs:
         working-directory: ./infra
         env:
           PULUMI_CONFIG_PASSPHRASE: ""
-        run: pulumi destroy --yes
+        run: |
+          pulumi destroy --yes
+          pulumi stack rm ${{ github.event.inputs.environment }} --yes --force
