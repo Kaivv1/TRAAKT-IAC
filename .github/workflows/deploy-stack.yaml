@@ -51,16 +51,22 @@ jobs:
       - name: Setup pulumi
         uses: pulumi/actions@v6
 
-      - name: Create Pulumi backend directory
-        run: mkdir -p /tmp/pulumi-backend
-
       - name: Download previous pulumi state
         uses: dawidd6/action-download-artifact@v3
         with:
           workflow: deploy-stack.yaml
           name: pulumi-state-${{ github.event.inputs.environment }}
-          path: /tmp/pulumi-backend
+          path: ~/.pulumi/stacks/
           if_no_artifact_found: ignore
+
+      - name: Verify state restored
+        run: |
+          if [ -d ~/.pulumi/stacks ] && [ "$(ls -A ~/.pulumi/stacks 2>/dev/null)" ]; then
+            echo "✅ State restored"
+            find ~/.pulumi/stacks -type f
+          else
+            echo "ℹ️ No previous state"
+          fi
 
       - name: Setup ssh
         run: |
@@ -82,20 +88,17 @@ jobs:
           sed -i "s/127.0.0.1/$MASTER_IP/g" ~/.kube/config
 
       - name: Install dependencies
-        working-directory: ./infra
         run: npm install
 
       - name: Pulumi login
-        run: pulumi login $PULUMI_BACKEND_URL
+        run: pulumi login --local
 
       - name: Choose stack
-        working-directory: ./infra
         run: |
           pulumi stack select ${{ github.event.inputs.environment }} --create
 
       - name: Deploy stack
         if: ${{ github.event.inputs.action == 'deploy' }}
-        working-directory: ./infra
         run: pulumi up --yes
 
       - name: Save pulumi state
@@ -103,12 +106,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pulumi-state-${{ github.event.inputs.environment }}
-          path: /tmp/pulumi-backend
+          path: ~/.pulumi/stacks
           retention-days: 400
 
       - name: Remove stack
         if: ${{ github.event.inputs.action == 'delete' }}
-        working-directory: ./infra
         run: |
           pulumi destroy --yes
           pulumi stack rm ${{ github.event.inputs.environment }} --yes --force
