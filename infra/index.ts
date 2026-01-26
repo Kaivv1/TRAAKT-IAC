@@ -4,79 +4,147 @@ import * as pulumi from "@pulumi/pulumi";
 const config = new pulumi.Config();
 const stack = pulumi.getStack();
 
-const stackNamespace = new k8s.core.v1.Namespace(stack, {
-    metadata: {
-        name: stack,
-        labels: { name: stack },
-    },
+const certManagerNs = new k8s.core.v1.Namespace("cert-manager", {
+    metadata: { name: "cert-manager" },
 });
+
+const certManager = new k8s.helm.v3.Chart(
+    "cert-manager",
+    {
+        chart: "cert-manager",
+        namespace: "cert-manager",
+        fetchOpts: { repo: "https://charts.jetstack.io" },
+        values: { installCRDs: true },
+    },
+    { dependsOn: certManagerNs },
+);
+
+const letsEncryptStaging = new k8s.apiextensions.CustomResource(
+    "letsencrypt-staging",
+    {
+        apiVersion: "cert-manager.io/v1",
+        kind: "ClusterIssuer",
+        metadata: { name: "letsencrypt-staging" },
+        spec: {
+            acme: {
+                server: "https://acme-staging-v02.api.letsencrypt.org/directory",
+                email: "gigoo2442@gmail.com",
+                privateKeySecretRef: { name: "letsencrypt-staging-key" },
+                solvers: [{ http01: { ingress: { class: "traefik" } } }],
+            },
+        },
+    },
+    { dependsOn: certManager },
+);
+
+const letsEncryptProd = new k8s.apiextensions.CustomResource(
+    "letsencrypt-prod",
+    {
+        apiVersion: "cert-manager.io/v1",
+        kind: "ClusterIssuer",
+        metadata: { name: "letsencrypt-prod" },
+        spec: {
+            acme: {
+                server: "https://acme-v02.api.letsencrypt.org/directory",
+                email: "gigoo2442@gmail.com",
+                privateKeySecretRef: { name: "letsencrypt-prod-key" },
+                solvers: [{ http01: { ingress: { class: "traefik" } } }],
+            },
+        },
+    },
+    { dependsOn: certManager },
+);
+
+const stackNs = new k8s.core.v1.Namespace(stack, {
+    metadata: { name: stack },
+});
+
 const provider = new k8s.Provider(`${stack}-provider`, {
     namespace: stack,
 });
 
-const cert = new k8s.apiextensions.CustomResource(
-    "my-cert",
+const appLabels = { app: "nginx", environment: stack };
+
+const nginxDeployment = new k8s.apps.v1.Deployment(
+    "nginx",
     {
-        apiVersion: "cert-manager.io/v1",
-        kind: "Certificate",
-        metadata: {
-            name: "my-cert",
-            namespace: "default",
-        },
         spec: {
-            secretName: "my-cert-tls",
-            issuerRef: {
-                name: "letsencrypt-prod",
-                kind: "ClusterIssuer",
+            selector: { matchLabels: appLabels },
+            replicas: 2,
+            template: {
+                metadata: { labels: appLabels },
+                spec: {
+                    containers: [
+                        {
+                            name: "nginx",
+                            image: "nginxdemos/hello:latest",
+                            ports: [{ containerPort: 80 }],
+                        },
+                    ],
+                },
             },
-            dnsNames: ["traakt.com", "www.traakt.com"],
+        },
+    },
+    { provider, dependsOn: stackNs },
+);
+
+const nginxService = new k8s.core.v1.Service(
+    "nginx-svc",
+    {
+        spec: {
+            type: "ClusterIP",
+            selector: appLabels,
+            ports: [{ port: 80, targetPort: 80 }],
         },
     },
     { provider },
 );
 
-// const appLabels = { app: "nginx" };
-// const nginxDeployment = new k8s.apps.v1.Deployment(
-//     "nginx",
-//     {
-//         spec: {
-//             selector: { matchLabels: appLabels },
-//             replicas: 2,
-//             template: {
-//                 metadata: { labels: appLabels },
-//                 spec: {
-//                     containers: [
-//                         {
-//                             name: "nginx",
-//                             image: "nginxdemos/hello:latest",
-//                             ports: [
-//                                 {
-//                                     containerPort: 80,
-//                                     name: "nginx-port",
-//                                 },
-//                             ],
-//                         },
-//                     ],
-//                 },
-//             },
-//         },
-//     },
-//     { provider, dependsOn: stackNamespace },
-// );
+const issuer = stack === "prod" ? "letsencrypt-prod" : "letsencrypt-staging";
+const domain = `${stack}.traakt.com`;
 
-// const nginxService = new k8s.core.v1.Service(
-//     "nginx-service",
-//     {
-//         spec: {
-//             type: "NodePort",
-//             selector: appLabels,
-//             ports: [{ targetPort: "nginx-port", port: 80 }],
-//         },
-//     },
-//     { provider, dependsOn: stackNamespace },
-// );
+const nginxIngress = new k8s.networking.v1.Ingress(
+    "nginx-ingress",
+    {
+        metadata: {
+            annotations: {
+                "kubernetes.io/ingress.class": "traefik",
+                "cert-manager.io/cluster-issuer": issuer,
+            },
+        },
+        spec: {
+            tls: [
+                {
+                    hosts: [domain],
+                    secretName: `${stack}-tls-cert`,
+                },
+            ],
+            rules: [
+                {
+                    host: domain,
+                    http: {
+                        paths: [
+                            {
+                                path: "/",
+                                pathType: "Prefix",
+                                backend: {
+                                    service: {
+                                        name: nginxService.metadata.name,
+                                        port: { number: 80 },
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+            ],
+        },
+    },
+    { provider, dependsOn: [letsEncryptStaging, letsEncryptProd] },
+);
 
-export const stackNamespaceName = stackNamespace.metadata.name;
-export const certName = cert.metadata.name;
-// export const deploymentName = nginxDeployment.metadata.name;
-// export const serviceName = nginxService.metadata.name;
+export const nginxDeploymentName = nginxDeployment.metadata.name;
+export const nginxSvcName = nginxService.metadata.name;
+export const nginxIngressName = nginxIngress.metadata.name;
+export const url = `https://${domain}`;
+export const issuerUsed = issuer;
