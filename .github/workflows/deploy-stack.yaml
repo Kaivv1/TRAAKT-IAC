@@ -25,13 +25,13 @@ on:
         description: Action
         required: true
         type: choice
-        default: "create"
+        default: "deploy"
         options:
-          - create
+          - deploy
           - delete
 
 jobs:
-  create_stack:
+  deploy_stack:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -80,7 +80,15 @@ jobs:
           pulumi stack select ${{ github.event.inputs.environment }} --create
 
       - name: Deploy stack
+        if: ${{ github.event.inputs.action == 'deploy' }}
         working-directory: ./infra
         env:
           PULUMI_CONFIG_PASSPHRASE: ""
         run: pulumi up --yes
+
+      - name: Remove stack
+        if: ${{ github.event.inputs.action == 'delete' }}
+        working-directory: ./infra
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ""
+        run: pulumi destroy --yes
