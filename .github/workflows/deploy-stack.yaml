@@ -46,7 +46,7 @@ jobs:
         uses: pulumi/actions@v6
 
       - name: Download previous pulumi state
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v4
         with:
           name: pulumi-state-${{ github.event.inputs.environment }}
           path: ~/.pulumi/stacks
