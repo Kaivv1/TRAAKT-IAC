@@ -100,6 +100,7 @@ jobs:
           pulumi stack select ${{ github.event.inputs.environment }} --create
 
       - name: Deploy stack
+        working-directory: ./infra
         if: ${{ github.event.inputs.action == 'deploy' }}
         run: pulumi up --yes
 
@@ -112,6 +113,7 @@ jobs:
           retention-days: 400
 
       - name: Remove stack
+        working-directory: ./infra
         if: ${{ github.event.inputs.action == 'delete' }}
         run: |
           pulumi destroy --yes
