@@ -57,7 +57,7 @@ jobs:
           workflow: deploy-stack.yaml
           workflow_search: true
           name: pulumi-state-${{ github.event.inputs.environment }}
-          path: ${{ runner.home }}/.pulumi/stacks/
+          path: /home/runner/.pulumi/stacks/
           if_no_artifact_found: ignore
 
       - name: Verify state restored
