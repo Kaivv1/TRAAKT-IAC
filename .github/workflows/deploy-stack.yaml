@@ -81,4 +81,6 @@ jobs:
 
       - name: Deploy stack
         working-directory: ./infra
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ""
         run: pulumi up --yes
