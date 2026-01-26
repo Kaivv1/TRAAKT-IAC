@@ -30,9 +30,6 @@ runs:
         fi
 
         echo "token=${OIDC_TOKEN}" >> $GITHUB_OUTPUT
-        echo "--------------"
-        echo "$GITHUB_OUTPUT"
-        echo "--------------"
         echo "OIDC token obtained"
 
     - name: Configure kubectl
@@ -44,7 +41,7 @@ runs:
         kind: Config
         clusters:
         - cluster:
-            certificate-authority-data: ${{ inputs.ca_cert }}
+            certificate-authority-data: ${{ inputs.k3s_cert }}
             server: https://${{ inputs.master_ip }}:6443
           name: k3s-cluster
         contexts:
@@ -59,3 +56,6 @@ runs:
             token: ${{ steps.oidc.outputs.token }}
         EOF
         chmod 600 ~/.kube/config
+
+        echo "Kubeconfig created:"
+        cat ~/.kube/config
