@@ -51,6 +51,9 @@ jobs:
       - name: Setup pulumi
         uses: pulumi/actions@v6
 
+      - name: Create Pulumi backend directory
+        run: mkdir -p /tmp/pulumi-backend
+
       - name: Download previous pulumi state
         uses: dawidd6/action-download-artifact@v3
         with:
@@ -111,9 +114,9 @@ jobs:
           pulumi destroy --yes
           pulumi stack rm ${{ github.event.inputs.environment }} --yes --force
 
-      - name: Delete pulumi state
-        if: ${{ github.event.inputs.action == 'delete' }}
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: pulumi-state-${{ github.event.inputs.environment }}
-        continue-on-error: true
+      # - name: Delete pulumi state
+      #   if: ${{ github.event.inputs.action == 'delete' }}
+      #   uses: geekyeggo/delete-artifact@v5
+      #   with:
+      #     name: pulumi-state-${{ github.event.inputs.environment }}
+      #   continue-on-error: true
