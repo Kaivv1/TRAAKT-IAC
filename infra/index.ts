@@ -19,6 +19,28 @@ const certManager = new k8s.helm.v3.Chart(
     { dependsOn: certManagerNs },
 );
 
+const waitForCertManager = new k8s.batch.v1.Job(
+    "wait-cert-manager",
+    {
+        metadata: { namespace: "cert-manager" },
+        spec: {
+            template: {
+                spec: {
+                    containers: [
+                        {
+                            name: "wait",
+                            image: "busybox:latest",
+                            command: ["sh", "-c", "sleep 60"],
+                        },
+                    ],
+                    restartPolicy: "Never",
+                },
+            },
+        },
+    },
+    { dependsOn: certManager },
+);
+
 const letsEncryptStaging = new k8s.apiextensions.CustomResource(
     "letsencrypt-staging",
     {
@@ -34,7 +56,7 @@ const letsEncryptStaging = new k8s.apiextensions.CustomResource(
             },
         },
     },
-    { dependsOn: certManager },
+    { dependsOn: waitForCertManager },
 );
 
 const letsEncryptProd = new k8s.apiextensions.CustomResource(
@@ -52,7 +74,7 @@ const letsEncryptProd = new k8s.apiextensions.CustomResource(
             },
         },
     },
-    { dependsOn: certManager },
+    { dependsOn: waitForCertManager },
 );
 
 const stackNs = new k8s.core.v1.Namespace(stack, {
