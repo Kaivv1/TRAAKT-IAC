@@ -46,11 +46,12 @@ jobs:
         uses: pulumi/actions@v6
 
       - name: Download previous pulumi state
-        uses: actions/download-artifact@v4
+        uses: dawidd6/action-download-artifact@v3
         with:
+          workflow: deploy-stack.yaml
           name: pulumi-state-${{ github.event.inputs.environment }}
           path: ~/.pulumi/stacks
-        continue-on-error: true
+          if_no_artifact_found: ignore
 
       - name: Setup ssh
         run: |
