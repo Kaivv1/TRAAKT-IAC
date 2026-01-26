@@ -65,26 +65,7 @@ jobs:
         uses: ./github/actions/setup-k3s-auth
         with:
           master_ip: ${{ github.event.inputs.master_ip }}
-          k3s_cert: ${{ github.event.inputs.k3s_cert }}
-
-      # - name: Setup ssh
-      #   run: |
-      #     mkdir -p ~/.ssh
-      #     echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-      #     chmod 600 ~/.ssh/id_ed25519
-      #     cat > ~/.ssh/config << 'EOF'
-      #     Host *
-      #     StrictHostKeyChecking no
-      #     EOF
-
-      # - name: Create kube config
-      #   run: |
-      #     SSH_USER=${{ github.event.inputs.ssh_user }}
-      #     MASTER_IP=${{ github.event.inputs.master_ip }}
-      #     mkdir -p ~/.kube
-      #     ssh $SSH_USER@$MASTER_IP cat "/etc/rancher/k3s/k3s.yaml" > ~/.kube/config
-      #     chmod 600 ~/.kube/config
-      #     sed -i "s/127.0.0.1/$MASTER_IP/g" ~/.kube/config
+          k3s_cert: ${{ secrets.K3S_CERT }}
 
       - name: Install dependencies
         working-directory: ./infra
