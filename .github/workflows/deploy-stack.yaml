@@ -8,11 +8,6 @@ on:
         type: string
         default: ""
         required: true
-      ssh_user:
-        description: SSH user
-        type: string
-        required: true
-        default: ""
       environment:
         description: Environment
         required: true
