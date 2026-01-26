@@ -4,7 +4,7 @@ inputs:
   master_ip:
     description: "k3s master IP"
     required: true
-  ca_cert:
+  k3s_cert:
     description: "k3s CA certificate"
     required: true
   audience:

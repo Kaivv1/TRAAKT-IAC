@@ -94,9 +94,9 @@ jobs:
           pulumi destroy --yes
           pulumi stack rm ${{ github.event.inputs.environment }} --yes --force
 
-      # - name: Delete pulumi state
-      #   if: ${{ github.event.inputs.action == 'delete' }}
-      #   uses: geekyeggo/delete-artifact@v5
-      #   with:
-      #     name: pulumi-state-${{ github.event.inputs.environment }}
-      #   continue-on-error: true
+      - name: Delete pulumi state
+        if: ${{ github.event.inputs.action == 'delete' }}
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: pulumi-state-${{ github.event.inputs.environment }}
+        continue-on-error: true
