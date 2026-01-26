@@ -30,7 +30,7 @@ const waitForCertManager = new k8s.batch.v1.Job(
                         {
                             name: "wait",
                             image: "busybox:latest",
-                            command: ["sh", "-c", "sleep 60"],
+                            command: ["sh", "-c", "sleep 40"],
                         },
                     ],
                     restartPolicy: "Never",
@@ -123,7 +123,8 @@ const nginxService = new k8s.core.v1.Service(
 );
 
 const issuer = stack === "prod" ? "letsencrypt-prod" : "letsencrypt-staging";
-const domain = `${stack}.traakt.com`;
+const domains =
+    stack === "prod" ? ["traakt.com", "www.traakt.com"] : [`traakt.${stack}.com`, `www.traakt.${stack}.com`];
 
 const nginxIngress = new k8s.networking.v1.Ingress(
     "nginx-ingress",
@@ -137,29 +138,27 @@ const nginxIngress = new k8s.networking.v1.Ingress(
         spec: {
             tls: [
                 {
-                    hosts: [domain],
+                    hosts: domains,
                     secretName: `${stack}-tls-cert`,
                 },
             ],
-            rules: [
-                {
-                    host: domain,
-                    http: {
-                        paths: [
-                            {
-                                path: "/",
-                                pathType: "Prefix",
-                                backend: {
-                                    service: {
-                                        name: nginxService.metadata.name,
-                                        port: { number: 80 },
-                                    },
+            rules: domains.map((domain) => ({
+                host: domain,
+                http: {
+                    paths: [
+                        {
+                            path: "/",
+                            pathType: "Prefix",
+                            backend: {
+                                service: {
+                                    name: nginxService.metadata.name,
+                                    port: { number: 80 },
                                 },
                             },
-                        ],
-                    },
+                        },
+                    ],
                 },
-            ],
+            })),
         },
     },
     { provider, dependsOn: [letsEncryptStaging, letsEncryptProd] },
@@ -168,5 +167,5 @@ const nginxIngress = new k8s.networking.v1.Ingress(
 export const nginxDeploymentName = nginxDeployment.metadata.name;
 export const nginxSvcName = nginxService.metadata.name;
 export const nginxIngressName = nginxIngress.metadata.name;
-export const url = `https://${domain}`;
+export const urls = domains;
 export const issuerUsed = issuer;

@@ -30,6 +30,11 @@ ssh $SSH_USER@$MASTER_IP bash << ENDSSH
     $(get_reservation_calculations)
     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server \
         --node-name=master
+        --kube-apiserver-arg=oidc-issuer-url=https://token.actions.githubusercontent.com \
+        --kube-apiserver-arg=oidc-client-id=https://kubernetes.default.svc.cluster.local \
+        --kube-apiserver-arg=oidc-username-claim=sub \
+        --kube-apiserver-arg=oidc-username-prefix=github: \
+        --kube-apiserver-arg=oidc-groups-claim=groups \
         --kubelet-arg=kube-reserved=cpu=\${KUBE_CPU}m,memory=\${KUBE_MEM}Mi \
         --kubelet-arg=system-reserved=cpu=\${SYSTEM_CPU}m,memory=\${SYSTEM_MEM}Mi \
         --kubelet-arg=eviction-hard=memory.available<\${EVICTION_MEM}Mi,nodefs.available<10%" sh -

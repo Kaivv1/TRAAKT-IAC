@@ -51,6 +51,16 @@ jobs:
             ${{ github.event.inputs.agents_ips }} \
             ${{ github.event.inputs.ssh_user }}
 
+      - name: Setup GitHub OIDC RBAC
+        if: github.event.inputs.action == 'install'
+        run: |
+          chmod +x ./scripts/setup-github-oidc-rbac.sh
+          ./scripts/setup-github-oidc-rbac.sh \
+            "${{ github.event.inputs.master_ip }}" \
+            "${{ github.event.inputs.ssh_user }}" \
+            "${{ github.repository_owner }}" \
+            "${{ github.event.repository.name }}"
+
       - name: Destroy cluster
         if: github.event.inputs.action == 'destroy'
         run: |

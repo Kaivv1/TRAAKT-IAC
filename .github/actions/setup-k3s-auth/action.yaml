@@ -1,0 +1,61 @@
+name: "Setup k3s Authentication"
+description: "Authenticate to k3s using GitHub OIDC"
+inputs:
+  master_ip:
+    description: "k3s master IP"
+    required: true
+  ca_cert:
+    description: "k3s CA certificate"
+    required: true
+  audience:
+    description: "OIDC audience"
+    required: false
+    default: "https://kubernetes.default.svc.cluster.local"
+
+runs:
+  using: composite
+  steps:
+    - name: Get GitHub OIDC token
+      id: oidc
+      shell: bash
+      run: |
+        echo "Requesting OIDC token..."
+        OIDC_TOKEN=$(curl -sLS "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${{ inputs.audience }}" \
+          -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+          -H "Accept: application/json; api-version=2.0" | jq -r '.value')
+
+        if [ -z "$OIDC_TOKEN" ] || [ "$OIDC_TOKEN" == "null" ]; then
+          echo "Failed to get OIDC token"
+          exit 1
+        fi
+
+        echo "token=${OIDC_TOKEN}" >> $GITHUB_OUTPUT
+        echo "--------------"
+        echo "$GITHUB_OUTPUT"
+        echo "--------------"
+        echo "OIDC token obtained"
+
+    - name: Configure kubectl
+      shell: bash
+      run: |
+        mkdir -p ~/.kube
+        cat > ~/.kube/config << EOF
+        apiVersion: v1
+        kind: Config
+        clusters:
+        - cluster:
+            certificate-authority-data: ${{ inputs.ca_cert }}
+            server: https://${{ inputs.master_ip }}:6443
+          name: k3s-cluster
+        contexts:
+        - context:
+            cluster: k3s-cluster
+            user: github-oidc
+          name: k3s-context
+        current-context: k3s-context
+        users:
+        - name: github-oidc
+          user:
+            token: ${{ steps.oidc.outputs.token }}
+        EOF
+        chmod 600 ~/.kube/config

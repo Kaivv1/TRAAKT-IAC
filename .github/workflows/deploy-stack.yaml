@@ -36,8 +36,10 @@ jobs:
     permissions:
       contents: read
       actions: read
+      id-token: write
     env:
       PULUMI_CONFIG_PASSPHRASE: ""
+      K8S_AUDIENCE: "https://kubernetes.default.svc.cluster.local"
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -59,33 +61,30 @@ jobs:
           path: /home/runner/.pulumi/stacks/
           if_no_artifact_found: ignore
 
-      # - name: Verify state restored
+      - name: Setup k3s auth
+        uses: ./github/actions/setup-k3s-auth
+        with:
+          master_ip: ${{ github.event.inputs.master_ip }}
+          k3s_cert: ${{ github.event.inputs.k3s_cert }}
+
+      # - name: Setup ssh
       #   run: |
-      #     if [ -d ~/.pulumi/stacks ] && [ "$(ls -A ~/.pulumi/stacks 2>/dev/null)" ]; then
-      #       echo "✅ State restored"
-      #       find ~/.pulumi/stacks -type f
-      #     else
-      #       echo "ℹ️ No previous state"
-      #     fi
+      #     mkdir -p ~/.ssh
+      #     echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+      #     chmod 600 ~/.ssh/id_ed25519
+      #     cat > ~/.ssh/config << 'EOF'
+      #     Host *
+      #     StrictHostKeyChecking no
+      #     EOF
 
-      - name: Setup ssh
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          cat > ~/.ssh/config << 'EOF'
-          Host *
-          StrictHostKeyChecking no
-          EOF
-
-      - name: Create kube config
-        run: |
-          SSH_USER=${{ github.event.inputs.ssh_user }}
-          MASTER_IP=${{ github.event.inputs.master_ip }}
-          mkdir -p ~/.kube
-          ssh $SSH_USER@$MASTER_IP cat "/etc/rancher/k3s/k3s.yaml" > ~/.kube/config
-          chmod 600 ~/.kube/config
-          sed -i "s/127.0.0.1/$MASTER_IP/g" ~/.kube/config
+      # - name: Create kube config
+      #   run: |
+      #     SSH_USER=${{ github.event.inputs.ssh_user }}
+      #     MASTER_IP=${{ github.event.inputs.master_ip }}
+      #     mkdir -p ~/.kube
+      #     ssh $SSH_USER@$MASTER_IP cat "/etc/rancher/k3s/k3s.yaml" > ~/.kube/config
+      #     chmod 600 ~/.kube/config
+      #     sed -i "s/127.0.0.1/$MASTER_IP/g" ~/.kube/config
 
       - name: Install dependencies
         working-directory: ./infra
