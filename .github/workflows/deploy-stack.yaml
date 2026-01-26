@@ -36,6 +36,9 @@ jobs:
     permissions:
       contents: read
       actions: read
+    env:
+      PULUMI_CONFIG_PASSPHRASE: ""
+      PULUMI_BACKEND_URL: file:///tmp/pulumi-backend
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -53,7 +56,7 @@ jobs:
         with:
           workflow: deploy-stack.yaml
           name: pulumi-state-${{ github.event.inputs.environment }}
-          path: ~/.pulumi/stacks
+          path: /tmp/pulumi-backend
           if_no_artifact_found: ignore
 
       - name: Setup ssh
@@ -81,20 +84,16 @@ jobs:
 
       - name: Pulumi login
         working-directory: ./infra
-        run: pulumi login --local
+        run: pulumi login $PULUMI_BACKEND_URL
 
       - name: Choose stack
         working-directory: ./infra
-        env:
-          PULUMI_CONFIG_PASSPHRASE: ""
         run: |
           pulumi stack select ${{ github.event.inputs.environment }} --create
 
       - name: Deploy stack
         if: ${{ github.event.inputs.action == 'deploy' }}
         working-directory: ./infra
-        env:
-          PULUMI_CONFIG_PASSPHRASE: ""
         run: pulumi up --yes
 
       - name: Save pulumi state
@@ -102,14 +101,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pulumi-state-${{ github.event.inputs.environment }}
-          path: ~/.pulumi/stacks
+          path: /tmp/pulumi-backend
           retention-days: 400
 
       - name: Remove stack
         if: ${{ github.event.inputs.action == 'delete' }}
         working-directory: ./infra
-        env:
-          PULUMI_CONFIG_PASSPHRASE: ""
         run: |
           pulumi destroy --yes
           pulumi stack rm ${{ github.event.inputs.environment }} --yes --force
