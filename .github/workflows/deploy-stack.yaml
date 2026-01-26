@@ -57,7 +57,7 @@ jobs:
           if_no_artifact_found: ignore
 
       - name: Setup k3s auth
-        uses: ./github/actions/setup-k3s-auth
+        uses: ./.github/actions/setup-k3s-auth
         with:
           master_ip: ${{ github.event.inputs.master_ip }}
           k3s_cert: ${{ secrets.K3S_CERT }}
