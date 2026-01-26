@@ -45,12 +45,12 @@ jobs:
       - name: Setup pulumi
         uses: pulumi/actions@v6
 
-      - name: Download previous pulumi state
-        uses: actions/download-artifact@v5
-        with:
-          name: pulumi-state-${{ github.event.inputs.environment }}
-          path: ./infra/.pulumi/
-        continue-on-error: true
+      # - name: Download previous pulumi state
+      #   uses: actions/download-artifact@v5
+      #   with:
+      #     name: pulumi-state-${{ github.event.inputs.environment }}
+      #     path: ./infra/.pulumi/
+      #   continue-on-error: true
 
       - name: Setup ssh
         run: |
@@ -93,13 +93,40 @@ jobs:
           PULUMI_CONFIG_PASSPHRASE: ""
         run: pulumi up --yes
 
-      - name: Save pulumi state
-        if: ${{ github.event.inputs.action == 'deploy' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: pulumi-state-${{ github.event.inputs.environment }}
-          path: ./infra/.pulumi/
-          retention-days: 400
+      - name: Debug - Find Pulumi state files
+        if: github.event.inputs.action == 'deploy'
+        run: |
+          echo "=== Current directory ==="
+          pwd
+
+          echo "=== List infra directory ==="
+          ls -la ./infra/
+
+          echo "=== Check for .pulumi in infra ==="
+          ls -la ./infra/.pulumi/ 2>/dev/null || echo "./infra/.pulumi/ does NOT exist"
+
+          echo "=== Check home .pulumi ==="
+          ls -la ~/.pulumi/ 2>/dev/null || echo "~/.pulumi/ does NOT exist"
+
+          echo "=== Find ALL .pulumi directories ==="
+          find . -name ".pulumi" -type d 2>/dev/null
+
+          echo "=== Find stack state files ==="
+          find . -name "*.json" -o -name "*.checkpoint" 2>/dev/null | grep -i pulumi
+
+          echo "=== Pulumi whoami ==="
+          pulumi whoami -v
+
+          echo "=== List stacks ==="
+          cd ./infra && pulumi stack ls --json
+
+      # - name: Save pulumi state
+      #   if: ${{ github.event.inputs.action == 'deploy' }}
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: pulumi-state-${{ github.event.inputs.environment }}
+      #     path: ./infra/.pulumi/
+      #     retention-days: 400
 
       - name: Remove stack
         if: ${{ github.event.inputs.action == 'delete' }}
