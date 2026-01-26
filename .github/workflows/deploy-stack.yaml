@@ -55,6 +55,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v3
         with:
           workflow: deploy-stack.yaml
+          workflow_search: true
           name: pulumi-state-${{ github.event.inputs.environment }}
           path: ${{ runner.home }}/.pulumi/stacks/
           if_no_artifact_found: ignore
