@@ -45,6 +45,13 @@ jobs:
       - name: Setup pulumi
         uses: pulumi/actions@v6
 
+      - name: Download previous pulumi state
+        uses: actions/download-artifact@v5
+        with:
+          name: pulumi-state-${{ github.event.inputs.environment }}
+          path: ~/.pulumi
+        continue-on-error: true
+
       - name: Setup ssh
         run: |
           mkdir -p ~/.ssh
@@ -86,6 +93,14 @@ jobs:
           PULUMI_CONFIG_PASSPHRASE: ""
         run: pulumi up --yes
 
+      - name: Save pulumi state
+        if: ${{ github.event.inputs.action == 'deploy' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulumi-state-${{ github.event.inputs.environment }}
+          path: ~/.pulumi
+          retention-days: 400
+
       - name: Remove stack
         if: ${{ github.event.inputs.action == 'delete' }}
         working-directory: ./infra
@@ -94,3 +109,10 @@ jobs:
         run: |
           pulumi destroy --yes
           pulumi stack rm ${{ github.event.inputs.environment }} --yes --force
+
+      - name: Delete pulumi state
+        if: ${{ github.event.inputs.action == 'delete' }}
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: pulumi-state-${{ github.event.inputs.environment }}
+        continue-on-error: true
