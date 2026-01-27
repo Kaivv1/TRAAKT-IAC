@@ -47,14 +47,15 @@ jobs:
       - name: Setup pulumi
         uses: pulumi/actions@v6
 
-      - name: Download previous pulumi state
-        uses: dawidd6/action-download-artifact@v3
-        with:
-          workflow: deploy-stack.yaml
-          workflow_search: true
-          name: pulumi-state-${{ github.event.inputs.environment }}
-          path: /home/runner/.pulumi/stacks/
-          if_no_artifact_found: ignore
+      - name: Download latest pulumi state
+        run: |
+          npm install @octokit/rest
+          node .github/scripts/download-artifact.js
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ENVIRONMENT: ${{ github.event.inputs.environment }}
+        continue-on-error: true
 
       - name: Setup k3s auth
         uses: ./.github/actions/setup-k3s-auth
