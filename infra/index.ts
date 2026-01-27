@@ -116,7 +116,7 @@ const nginxService = new k8s.core.v1.Service(
         spec: {
             type: "ClusterIP",
             selector: appLabels,
-            ports: [{ port: 443, targetPort: 80 }],
+            ports: [{ port: 80, targetPort: 80 }],
         },
     },
     { provider },
