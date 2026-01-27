@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      actions: read
+      actions: read|write
       id-token: write
     env:
       PULUMI_CONFIG_PASSPHRASE: ""
