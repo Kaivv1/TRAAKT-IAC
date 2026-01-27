@@ -74,7 +74,7 @@ const letsEncryptProd = new k8s.apiextensions.CustomResource(
             },
         },
     },
-    { dependsOn: [waitForCertManager] },
+    { dependsOn: waitForCertManager },
 );
 
 const stackNs = new k8s.core.v1.Namespace(stack, {
@@ -132,6 +132,7 @@ const nginxIngress = new k8s.networking.v1.Ingress(
             annotations: {
                 "kubernetes.io/ingress.class": "traefik",
                 "cert-manager.io/cluster-issuer": issuer,
+                "traefik.ingress.kubernetes.io/router.entrypoints": "websecure",
             },
         },
         spec: {
