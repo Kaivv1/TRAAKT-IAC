@@ -32,7 +32,7 @@ runs:
         echo "token=${OIDC_TOKEN}" >> $GITHUB_OUTPUT
         echo "OIDC token obtained"
 
-    - name: Configure kubectl
+    - name: Configure kube config
       shell: bash
       run: |
         mkdir -p ~/.kube

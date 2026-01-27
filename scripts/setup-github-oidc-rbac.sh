@@ -27,7 +27,6 @@ roleRef:
   kind: ClusterRole
   name: github-actions-deployer
 subjects:
-# Allow all workflows from this repository
 - kind: User
   name: "github:repo:${GITHUB_ORG}/${GITHUB_REPO}:ref:refs/heads/main"
   apiGroup: rbac.authorization.k8s.io
@@ -39,9 +38,6 @@ scp /tmp/github-oidc-rbac.yaml $SSH_USER@$MASTER_IP:/tmp/
 echo "Applying RBAC configuration..."
 ssh $SSH_USER@$MASTER_IP "sudo kubectl apply -f /tmp/github-oidc-rbac.yaml"
 
-echo "Verifying RBAC setup..."
-ssh $SSH_USER@$MASTER_IP "sudo kubectl get clusterrolebinding github-actions-deployer"
-
 echo "Retrieving cluster CA certificate..."
 CA_CERT=$(ssh $SSH_USER@$MASTER_IP "sudo cat /var/lib/rancher/k3s/server/tls/server-ca.crt | base64 -w 0")
 
@@ -49,7 +45,6 @@ echo "-------------------------------------------"
 echo "$CA_CERT"
 echo "-------------------------------------------"
 
-# Cleanup
 ssh $SSH_USER@$MASTER_IP "rm -f /tmp/github-oidc-rbac.yaml"
 rm -f /tmp/github-oidc-rbac.yaml
 
