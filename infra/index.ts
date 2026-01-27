@@ -30,7 +30,7 @@ const waitForCertManager = new k8s.batch.v1.Job(
                         {
                             name: "wait",
                             image: "busybox:latest",
-                            command: ["sh", "-c", "sleep 40"],
+                            command: ["sh", "-c", "sleep 60"],
                         },
                     ],
                     restartPolicy: "Never",
@@ -151,7 +151,7 @@ const nginxIngress = new k8s.networking.v1.Ingress(
                             backend: {
                                 service: {
                                     name: nginxService.metadata.name,
-                                    port: { number: 443 },
+                                    port: { number: 80 },
                                 },
                             },
                         },
