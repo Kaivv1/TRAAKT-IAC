@@ -29,7 +29,7 @@ roleRef:
 subjects:
 # Allow all workflows from this repository
 - kind: User
-  name: "github:repo:${GITHUB_ORG}/${GITHUB_REPO}:*"
+  name: "github:repo:${GITHUB_ORG}/${GITHUB_REPO}:ref:refs/heads/main"
   apiGroup: rbac.authorization.k8s.io
 EOF
 
