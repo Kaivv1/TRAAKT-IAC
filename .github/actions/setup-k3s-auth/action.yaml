@@ -56,6 +56,3 @@ runs:
             token: ${{ steps.oidc.outputs.token }}
         EOF
         chmod 600 ~/.kube/config
-
-        echo "Kubeconfig created:"
-        cat ~/.kube/config

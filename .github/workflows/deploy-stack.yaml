@@ -62,14 +62,6 @@ jobs:
           master_ip: ${{ github.event.inputs.master_ip }}
           k3s_cert: ${{ secrets.K3S_CERT }}
 
-      - name: Verify kubectl works
-        run: |
-          echo "Testing kubectl connection..."
-          kubectl cluster-info
-          kubectl get nodes
-          echo "Kubeconfig:"
-          cat ~/.kube/config
-
       - name: Install dependencies
         working-directory: ./infra
         run: npm install
