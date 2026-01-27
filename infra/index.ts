@@ -74,7 +74,7 @@ const letsEncryptStaging = new k8s.apiextensions.CustomResource(
                 server: "https://acme-staging-v02.api.letsencrypt.org/directory",
                 email: "gigoo2442@gmail.com",
                 privateKeySecretRef: { name: "letsencrypt-staging-key" },
-                solvers: [{ http01: { ingress: { class: "traefik" } } }],
+                solvers: [{ http01: { ingress: { class: "traefik", ingressClassName: "traefik" } } }],
             },
         },
     },
@@ -92,7 +92,7 @@ const letsEncryptProd = new k8s.apiextensions.CustomResource(
                 server: "https://acme-v02.api.letsencrypt.org/directory",
                 email: "gigoo2442@gmail.com",
                 privateKeySecretRef: { name: "letsencrypt-prod-key" },
-                solvers: [{ http01: { ingress: { class: "traefik" } } }],
+                solvers: [{ http01: { ingress: { class: "traefik", ingressClassName: "traefik" } } }],
             },
         },
     },
@@ -112,6 +112,7 @@ const appLabels = { app: "nginx", environment: stack };
 const nginxDeployment = new k8s.apps.v1.Deployment(
     "nginx",
     {
+        metadata: { name: "nginx" },
         spec: {
             selector: { matchLabels: appLabels },
             replicas: 2,
@@ -135,6 +136,7 @@ const nginxDeployment = new k8s.apps.v1.Deployment(
 const nginxService = new k8s.core.v1.Service(
     "nginx-svc",
     {
+        metadata: { name: "nginx-svc" },
         spec: {
             type: "ClusterIP",
             selector: appLabels,
@@ -151,13 +153,14 @@ const nginxIngress = new k8s.networking.v1.Ingress(
     "nginx-ingress",
     {
         metadata: {
+            name: "nginx-ingress",
             annotations: {
-                "kubernetes.io/ingress.class": "traefik",
                 "cert-manager.io/cluster-issuer": issuer,
-                "traefik.ingress.kubernetes.io/router.entrypoints": "websecure",
+                // "traefik.ingress.kubernetes.io/router.priority": "1",
             },
         },
         spec: {
+            ingressClassName: "traefik",
             tls: [
                 {
                     hosts: domains,
