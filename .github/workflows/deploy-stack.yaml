@@ -96,7 +96,21 @@ jobs:
 
       - name: Delete pulumi state
         if: ${{ github.event.inputs.action == 'delete' }}
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: pulumi-state-${{ github.event.inputs.environment }}
+        uses: actions/github-script@v7
         continue-on-error: true
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            for (const artifact of artifacts.data.artifacts) {
+              if (artifact.name === 'pulumi-state-${{ github.event.inputs.environment }}') {
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                });
+              }
+            }
