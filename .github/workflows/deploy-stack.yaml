@@ -50,7 +50,7 @@ jobs:
       - name: Download latest pulumi state
         run: |
           npm install @octokit/rest
-          node .github/scripts/download-artifact.js
+          node ./.github/scripts/download-artifact.js
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
