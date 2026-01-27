@@ -132,7 +132,6 @@ const nginxIngress = new k8s.networking.v1.Ingress(
             annotations: {
                 "kubernetes.io/ingress.class": "traefik",
                 "cert-manager.io/cluster-issuer": issuer,
-                "traefik.ingress.kubernetes.io/router.entrypoints": "websecure",
             },
         },
         spec: {
