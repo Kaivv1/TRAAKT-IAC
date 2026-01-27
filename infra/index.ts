@@ -74,7 +74,16 @@ const letsEncryptStaging = new k8s.apiextensions.CustomResource(
                 server: "https://acme-staging-v02.api.letsencrypt.org/directory",
                 email: "gigoo2442@gmail.com",
                 privateKeySecretRef: { name: "letsencrypt-staging-key" },
-                solvers: [{ http01: { ingress: { class: "traefik", ingressClassName: "traefik" } } }],
+                solvers: [
+                    {
+                        http01: {
+                            ingress: {
+                                // class: "traefik",
+                                ingressClassName: "traefik",
+                            },
+                        },
+                    },
+                ],
             },
         },
     },
@@ -92,7 +101,16 @@ const letsEncryptProd = new k8s.apiextensions.CustomResource(
                 server: "https://acme-v02.api.letsencrypt.org/directory",
                 email: "gigoo2442@gmail.com",
                 privateKeySecretRef: { name: "letsencrypt-prod-key" },
-                solvers: [{ http01: { ingress: { class: "traefik", ingressClassName: "traefik" } } }],
+                solvers: [
+                    {
+                        http01: {
+                            ingress: {
+                                // class: "traefik",
+                                ingressClassName: "traefik",
+                            },
+                        },
+                    },
+                ],
             },
         },
     },
