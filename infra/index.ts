@@ -4,6 +4,28 @@ import * as pulumi from "@pulumi/pulumi";
 const config = new pulumi.Config();
 const stack = pulumi.getStack();
 
+const traefikConfig = new k8s.apiextensions.CustomResource("traefik-config", {
+    apiVersion: "helm.cattle.io/v1",
+    kind: "HelmChartConfig",
+    metadata: {
+        name: "traefik",
+        namespace: "kube-system",
+    },
+    spec: {
+        valuesContent: `
+additionalArguments:
+  - "--certificatesresolvers.letsencrypt.acme.email=gigoo2442@gmail.com"
+  - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
+  - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+ports:
+  web:
+    exposedPort: 80
+  websecure:
+    exposedPort: 443
+            `.trim(),
+    },
+});
+
 const certManagerNs = new k8s.core.v1.Namespace("cert-manager", {
     metadata: { name: "cert-manager" },
 });
@@ -18,26 +40,6 @@ const certManager = new k8s.helm.v3.Chart(
     },
     { dependsOn: certManagerNs },
 );
-
-const traefikHttpsRedirect = new k8s.apiextensions.CustomResource("traefik-https-redirect", {
-    apiVersion: "helm.cattle.io/v1",
-    kind: "HelmChartConfig",
-    metadata: {
-        name: "traefik",
-        namespace: "kube-system",
-    },
-    spec: {
-        valuesContent: `
-entryPoints:
-  web:
-    http:
-      redirections:
-        entryPoint:
-          to: websecure
-          scheme: https
-`,
-    },
-});
 
 const waitForCertManager = new k8s.batch.v1.Job(
     "wait-cert-manager",
@@ -152,6 +154,7 @@ const nginxIngress = new k8s.networking.v1.Ingress(
             annotations: {
                 "kubernetes.io/ingress.class": "traefik",
                 "cert-manager.io/cluster-issuer": issuer,
+                "traefik.ingress.kubernetes.io/router.entrypoints": "websecure",
             },
         },
         spec: {
@@ -180,12 +183,12 @@ const nginxIngress = new k8s.networking.v1.Ingress(
             })),
         },
     },
-    { provider, dependsOn: [letsEncryptStaging, letsEncryptProd] },
+    { provider, dependsOn: [letsEncryptStaging, letsEncryptProd, traefikConfig] },
 );
 
 export const nginxDeploymentName = nginxDeployment.metadata.name;
 export const nginxSvcName = nginxService.metadata.name;
 export const nginxIngressName = nginxIngress.metadata.name;
-export const urls = domains;
+export const urls = domains.map((d) => `https://${d}`);
 export const issuerUsed = issuer;
 export const nsName = stackNs.metadata.name;
