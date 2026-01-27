@@ -19,6 +19,26 @@ const certManager = new k8s.helm.v3.Chart(
     { dependsOn: certManagerNs },
 );
 
+const traefikHttpsRedirect = new k8s.apiextensions.CustomResource("traefik-https-redirect", {
+    apiVersion: "helm.cattle.io/v1",
+    kind: "HelmChartConfig",
+    metadata: {
+        name: "traefik",
+        namespace: "kube-system",
+    },
+    spec: {
+        valuesContent: `
+entryPoints:
+  web:
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+`,
+    },
+});
+
 const waitForCertManager = new k8s.batch.v1.Job(
     "wait-cert-manager",
     {
@@ -132,8 +152,6 @@ const nginxIngress = new k8s.networking.v1.Ingress(
             annotations: {
                 "kubernetes.io/ingress.class": "traefik",
                 "cert-manager.io/cluster-issuer": issuer,
-                "ingress.kubernetes.io/ssl-redirect": "true",
-                "traefik.ingress.kubernetes.io/redirect-to-https": "true",
             },
         },
         spec: {
