@@ -74,7 +74,7 @@ const letsEncryptProd = new k8s.apiextensions.CustomResource(
             },
         },
     },
-    { dependsOn: waitForCertManager },
+    { dependsOn: [waitForCertManager] },
 );
 
 const stackNs = new k8s.core.v1.Namespace(stack, {
@@ -116,7 +116,7 @@ const nginxService = new k8s.core.v1.Service(
         spec: {
             type: "ClusterIP",
             selector: appLabels,
-            ports: [{ port: 80, targetPort: 80 }],
+            ports: [{ port: 443, targetPort: 80 }],
         },
     },
     { provider },
@@ -151,7 +151,7 @@ const nginxIngress = new k8s.networking.v1.Ingress(
                             backend: {
                                 service: {
                                     name: nginxService.metadata.name,
-                                    port: { number: 80 },
+                                    port: { number: 443 },
                                 },
                             },
                         },
