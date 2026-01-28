@@ -151,24 +151,24 @@ const domains = stack === "prod" ? ["traakt.com", "www.traakt.com"] : [`${stack}
 //     file: "https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml",
 // });
 
-// const redirectMiddleware = new k8s.apiextensions.CustomResource(
-//     "https-redirect",
-//     {
-//         apiVersion: "traefik.containo.us/v1alpha1",
-//         kind: "Middleware",
-//         metadata: {
-//             name: "https-redirect",
-//             namespace: stack,
-//         },
-//         spec: {
-//             redirectScheme: {
-//                 scheme: "https",
-//                 permanent: true,
-//             },
-//         },
-//     },
-//     { provider, dependsOn: [traefikCRDs] },
-// );
+const redirectMiddleware = new k8s.apiextensions.CustomResource(
+    "https-redirect",
+    {
+        apiVersion: "traefik.io/v1alpha1",
+        kind: "Middleware",
+        metadata: {
+            name: "https-redirect",
+            namespace: stack,
+        },
+        spec: {
+            redirectScheme: {
+                scheme: "https",
+                permanent: true,
+            },
+        },
+    },
+    { provider },
+);
 
 const nginxIngress = new k8s.networking.v1.Ingress(
     "nginx-ingress",
@@ -177,7 +177,8 @@ const nginxIngress = new k8s.networking.v1.Ingress(
             annotations: {
                 "kubernetes.io/ingress.class": "traefik",
                 "cert-manager.io/cluster-issuer": issuer,
-                "traefik.ingress.kubernetes.io/redirect-to-https": "true",
+                "traefik.ingress.kubernetes.io/router.middlewares": `${stack}-https-redirect@kubernetescrd`,
+                // "traefik.ingress.kubernetes.io/redirect-to-https": "true",
                 // "traefik.ingress.kubernetes.io/router.entrypoints: websecure",
                 // "traefik.ingress.kubernetes.io/rate-limit": "average=100,burst=200",
             },
@@ -208,7 +209,7 @@ const nginxIngress = new k8s.networking.v1.Ingress(
             })),
         },
     },
-    { provider, dependsOn: [letsEncryptStaging, letsEncryptProd] },
+    { provider, dependsOn: [letsEncryptStaging, letsEncryptProd, redirectMiddleware] },
 );
 
 export const nginxDeploymentName = nginxDeployment.metadata.name;
