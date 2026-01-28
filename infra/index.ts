@@ -147,9 +147,9 @@ const nginxService = new k8s.core.v1.Service(
 const issuer = stack === "prod" ? "letsencrypt-prod" : "letsencrypt-staging";
 const domains = stack === "prod" ? ["traakt.com", "www.traakt.com"] : [`${stack}.traakt.com`];
 
-const traefikCRDs = new k8s.yaml.ConfigFile("traefik-crds", {
-    file: "https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml",
-});
+// const traefikCRDs = new k8s.yaml.ConfigFile("traefik-crds", {
+//     file: "https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml",
+// });
 
 // const redirectMiddleware = new k8s.apiextensions.CustomResource(
 //     "https-redirect",
