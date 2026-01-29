@@ -113,7 +113,6 @@ jobs:
         if: ${{ github.event.inputs.action == 'delete' }}
         run: |
           pulumi destroy --yes
-          pulumi stack rm ${{ github.event.inputs.environment }} --yes --force
 
       - name: Save pulumi state
         run: |
