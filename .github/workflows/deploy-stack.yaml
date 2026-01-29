@@ -82,16 +82,6 @@ jobs:
           echo "Copying pulumi state..."
           scp -r $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/stacks/* ~/.pulumi/stacks/ 2>/dev/null && echo "Pulumi state copied" || echo "No pulumi state found"
 
-      - name: Check pulumi folder
-        run: |
-          echo "----------------"
-          if [[ -d ~/.pulumi/stacks ]]; then
-            ls ~/.pulumi/stacks
-          else
-            echo "no pulumi folder"
-          fi
-          echo "----------------"
-
       - name: Install dependencies
         working-directory: ./infra
         run: npm install
