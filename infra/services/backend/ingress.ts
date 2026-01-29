@@ -25,6 +25,10 @@ export const backendRateLimitMiddleware = TraefikMiddleware.createRateLimit(
 
 const middlewaresLiteral = pulumi.interpolate`${namespace}-${backendHttpsRedirectMiddleware.name}${crd},${namespace}-${backendCorsMiddleware.name}${crd},${namespace}-${backendRateLimitMiddleware.name}${crd}`;
 
+console.log("-----------middlewaresLiteral----------");
+console.log(middlewaresLiteral);
+console.log("------------middlewaresLiteral-----------");
+
 export const backendIngress = new k8s.networking.v1.Ingress(
     "backend-ingress",
     {
