@@ -4,7 +4,7 @@ import { certManager } from "./cert-manager";
 export const waitForCertManager = new k8s.batch.v1.Job(
     "wait-cert-manager",
     {
-        metadata: { namespace: "cert-manager" },
+        metadata: { name: "wait-cert-manager", namespace: "cert-manager" },
         spec: {
             template: {
                 spec: {

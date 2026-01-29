@@ -111,7 +111,7 @@ export class TraefikMiddleware extends pulumi.ComponentResource {
                 labels,
                 spec: {
                     headers: {
-                        accessControlAllowOriginList: config.domains,
+                        accessControlAllowOriginList: config.domains.map((d) => `https://${d}`),
                         accessControlAllowMethods: methods,
                         accessControlAllowHeaders: ["*"],
                     },
