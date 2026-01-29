@@ -73,7 +73,7 @@ jobs:
       - name: Setup k3s auth
         uses: ./.github/actions/setup-k3s-auth
         with:
-          master_ip: ${{ env.MASTER_IP }}
+          master_ip: "$MASTER_IP"
           k3s_cert: ${{ secrets.K3S_CERT }}
 
       - name: Copy pulumi state
