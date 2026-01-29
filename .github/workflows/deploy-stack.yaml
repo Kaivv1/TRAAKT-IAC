@@ -79,7 +79,7 @@ jobs:
         run: |
           mkdir -p /home/runner/.pulumi/stacks
           echo "Copying pulumi state..."
-          scp -r $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/stacks/* ./pulumi/stacks/ || echo "No pulumi state found"
+          scp -r $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/stacks/ ./pulumi/stacks/ || echo "No pulumi state found"
 
       - name: Check pulumi folder
         run: |
@@ -127,7 +127,7 @@ jobs:
       - name: Save pulumi state
         run: |
           echo "Saving pulumi state..."
-          scp -r ~/.pulumi/stacks/* $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/stacks/
+          scp -r ~/.pulumi/stacks/ $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/stacks/
           echo "Pulumi state saved"
       # - name: Delete pulumi state
       #   if: ${{ github.event.inputs.action == 'delete' }}
