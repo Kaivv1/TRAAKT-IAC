@@ -84,7 +84,7 @@ jobs:
       - name: Check pulumi folder
         run: |
           echo "----------------"
-          if [[ -d ~/.pulumi/stacks ]]
+          if [[ -d ~/.pulumi/stacks ]]; then
             ls ~/.pulumi/stacks
           else
             echo "no pulumi folder"
