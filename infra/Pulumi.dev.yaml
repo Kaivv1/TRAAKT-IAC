@@ -1,2 +1,2 @@
 config:
-  infra:something:
+  infra:createCoreResources: ${CREATE_CORE_RESOURCES}

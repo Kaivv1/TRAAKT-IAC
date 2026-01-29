@@ -47,15 +47,15 @@ jobs:
       - name: Setup pulumi
         uses: pulumi/actions@v6
 
-      - name: Download latest pulumi state
-        run: |
-          npm install @octokit/rest
-          node ./scripts/download-artifact.js
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          ENVIRONMENT: ${{ github.event.inputs.environment }}
-        continue-on-error: true
+      # - name: Download latest pulumi state
+      #   run: |
+      #     npm install @octokit/rest
+      #     node ./scripts/download-artifact.js
+      #   env:
+      #     GITHUB_TOKEN: ${{ github.token }}
+      #     GITHUB_REPOSITORY: ${{ github.repository }}
+      #     ENVIRONMENT: ${{ github.event.inputs.environment }}
+      #   continue-on-error: true
 
       - name: Setup k3s auth
         uses: ./.github/actions/setup-k3s-auth
@@ -68,12 +68,12 @@ jobs:
         run: npm install
 
       - name: Pulumi login
-        run: pulumi login --local
+        run: pulumi login
 
       - name: Choose stack
         working-directory: ./infra
         run: |
-          pulumi stack select ${{ github.event.inputs.environment }} --create
+          pulumi stack select ${{ github.event.inputs.environment }}
 
       - name: Deploy stack
         working-directory: ./infra
@@ -95,23 +95,23 @@ jobs:
           pulumi destroy --yes
           pulumi stack rm ${{ github.event.inputs.environment }} --yes --force
 
-      - name: Delete pulumi state
-        if: ${{ github.event.inputs.action == 'delete' }}
-        uses: actions/github-script@v7
-        continue-on-error: true
-        with:
-          script: |
-            const artifacts = await github.rest.actions.listArtifactsForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
+      # - name: Delete pulumi state
+      #   if: ${{ github.event.inputs.action == 'delete' }}
+      #   uses: actions/github-script@v7
+      #   continue-on-error: true
+      #   with:
+      #     script: |
+      #       const artifacts = await github.rest.actions.listArtifactsForRepo({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #       });
 
-            for (const artifact of artifacts.data.artifacts) {
-              if (artifact.name === 'pulumi-state-${{ github.event.inputs.environment }}') {
-                await github.rest.actions.deleteArtifact({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  artifact_id: artifact.id,
-                });
-              }
-            }
+      #       for (const artifact of artifacts.data.artifacts) {
+      #         if (artifact.name === 'pulumi-state-${{ github.event.inputs.environment }}') {
+      #           await github.rest.actions.deleteArtifact({
+      #             owner: context.repo.owner,
+      #             repo: context.repo.repo,
+      #             artifact_id: artifact.id,
+      #           });
+      #         }
+      #       }

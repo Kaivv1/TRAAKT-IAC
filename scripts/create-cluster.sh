@@ -74,4 +74,11 @@ for i in "${!AGENT_IPS[@]}"; do
     install_agent $NODE_IP $NAME
 done
 
+echo "Creating pulumi state folder..."
+if ssh $SSH_USER:$MASTER_IP "mkdir -p /var/pulumi/state"; then
+    echo "Pulumi state folder created"
+else
+    echo "Failed to create pulumi state folder"
+fi
+
 echo "Cluster setup is ready"

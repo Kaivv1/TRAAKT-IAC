@@ -1,0 +1,23 @@
+name: Setup SSH
+description: Configures SSH so you can connect to the vm
+
+inputs:
+  ssh_private_key:
+    required: true
+    descriptions: "SSH private key"
+
+runs:
+  using: composite
+  steps:
+    - name: Setup SSH
+      shell: bash
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ inputs.ssh_private_key }}" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        cat > ~/.ssh/config << 'EOF'
+        Host *
+          StrictHostKeyChecking no
+          UserKnownHostsFile /dev/null
+        EOF
+        chmod 600 ~/.ssh/config
