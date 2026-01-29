@@ -29,6 +29,7 @@ export const backendIngress = new k8s.networking.v1.Ingress(
     "backend-ingress",
     {
         metadata: {
+            name: "backend-ingress",
             namespace,
             labels: config.labels.backend,
             annotations: {

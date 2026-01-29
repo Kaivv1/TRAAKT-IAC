@@ -6,6 +6,7 @@ export const backendService = new k8s.core.v1.Service(
     "backend-svc",
     {
         metadata: {
+            name: "backend-svc",
             namespace: backendNs.metadata.name,
             labels: config.labels.backend,
         },

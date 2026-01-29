@@ -5,7 +5,7 @@ import { backendNs } from "./namespace";
 export const backendDeployment = new k8s.apps.v1.Deployment(
     "backend",
     {
-        metadata: { namespace: backendNs.metadata.name },
+        metadata: { name: "backend", namespace: backendNs.metadata.name, labels: config.labels.backend },
         spec: {
             selector: { matchLabels: config.labels.backend },
             replicas: 2,
