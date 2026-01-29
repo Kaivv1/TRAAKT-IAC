@@ -101,7 +101,8 @@ jobs:
       - name: Choose stack
         working-directory: ./infra
         run: |
-          pulumi stack select ${{ github.event.inputs.environment }}
+          pulumi stack select ${{ github.event.inputs.environment }} || \
+          pulumi stack select ${{ github.event.inputs.environment }} --create
 
       - name: Deploy stack
         working-directory: ./infra
