@@ -19,6 +19,9 @@ destroy_node() {
         if [ -f /usr/local/bin/k3s-uninstall.sh ]; then
             echo "Uninstalling k3s server..."
             /usr/local/bin/k3s-uninstall.sh
+
+            echo "Removing pulumi state folder..."
+            rm -rf /var/pulumi
         fi
 
         if [ -f /usr/local/bin/k3s-agent-uninstall.sh ]; then
