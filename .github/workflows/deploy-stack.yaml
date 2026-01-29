@@ -55,7 +55,8 @@ jobs:
       - name: Setup pulumi
         uses: pulumi/actions@v6
 
-      - uses: ./.github/actions/setup-ssh
+      - name: Setup SSH
+        uses: ./.github/actions/setup-ssh
         with:
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
 
@@ -72,14 +73,14 @@ jobs:
       - name: Setup k3s auth
         uses: ./.github/actions/setup-k3s-auth
         with:
-          master_ip: "$MASTER_IP"
+          master_ip: ${{ env.MASTER_IP }}
           k3s_cert: ${{ secrets.K3S_CERT }}
 
       - name: Copy pulumi state
         run: |
           mkdir -p /home/runner/.pulumi/stacks
           echo "Copying pulumi state..."
-          scp -r $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/stacks/* ~/.pulumi/stacks/ >2/dev/null && echo "Pulumi state copied" || echo "No pulumi state found"
+          scp -r $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/stacks/* ~/.pulumi/stacks/ 2>/dev/null && echo "Pulumi state copied" || echo "No pulumi state found"
 
       - name: Check pulumi folder
         run: |
@@ -127,7 +128,7 @@ jobs:
       - name: Save pulumi state
         run: |
           echo "Saving pulumi state..."
-          scp -r ~/.pulumi/stacks/ $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/stacks/
+          scp -r ~/.pulumi/stacks/* $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/stacks/
           echo "Pulumi state saved"
       # - name: Delete pulumi state
       #   if: ${{ github.event.inputs.action == 'delete' }}
