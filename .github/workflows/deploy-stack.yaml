@@ -79,7 +79,7 @@ jobs:
         run: |
           mkdir -p /home/runner/.pulumi/stacks
           echo "Copying pulumi state..."
-          scp -r $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/stacks/ ~/.pulumi/stacks/ || echo "No pulumi state found"
+          scp -r $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/stacks/* ~/.pulumi/stacks/ || echo "No pulumi state found"
 
       - name: Check pulumi folder
         run: |
