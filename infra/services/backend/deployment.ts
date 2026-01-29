@@ -1,0 +1,27 @@
+import * as k8s from "@pulumi/kubernetes";
+import * as config from "../../shared/config";
+import { backendNs } from "./namespace";
+
+export const backendDeployment = new k8s.apps.v1.Deployment(
+    "backend",
+    {
+        metadata: { namespace: backendNs.metadata.name },
+        spec: {
+            selector: { matchLabels: config.labels.backend },
+            replicas: 2,
+            template: {
+                metadata: { labels: config.labels.backend },
+                spec: {
+                    containers: [
+                        {
+                            name: "api",
+                            image: "nginxdemos/hello:latest",
+                            ports: [{ containerPort: 80 }],
+                        },
+                    ],
+                },
+            },
+        },
+    },
+    { dependsOn: [backendNs] },
+);

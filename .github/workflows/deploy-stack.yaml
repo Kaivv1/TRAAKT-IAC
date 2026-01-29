@@ -16,7 +16,6 @@ on:
         options:
           - dev
           - demo
-          - prod
       action:
         description: Action
         required: true
@@ -35,7 +34,7 @@ jobs:
       id-token: write
     env:
       PULUMI_CONFIG_PASSPHRASE: ""
-      K8S_AUDIENCE: "https://kubernetes.default.svc.cluster.local"
+      K8S_AUDIENCE: ${{ secrets.K8S_AUDIENCE }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6

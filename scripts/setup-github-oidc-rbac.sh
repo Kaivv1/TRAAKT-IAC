@@ -38,14 +38,4 @@ scp /tmp/github-oidc-rbac.yaml $SSH_USER@$MASTER_IP:/tmp/
 echo "Applying RBAC configuration..."
 ssh $SSH_USER@$MASTER_IP "sudo kubectl apply -f /tmp/github-oidc-rbac.yaml"
 
-echo "Retrieving cluster CA certificate..."
-CA_CERT=$(ssh $SSH_USER@$MASTER_IP "sudo cat /var/lib/rancher/k3s/server/tls/server-ca.crt | base64 -w 0")
-
-echo "-------------------------------------------"
-echo "$CA_CERT"
-echo "-------------------------------------------"
-
-ssh $SSH_USER@$MASTER_IP "rm -f /tmp/github-oidc-rbac.yaml"
-rm -f /tmp/github-oidc-rbac.yaml
-
 echo "RBAC configuration applied successfully!"
