@@ -3,6 +3,11 @@ name: Deploy stack
 on:
   workflow_dispatch:
     inputs:
+      ssh_user:
+        description: Choose a ssh user
+        type: string
+        required: true
+        default: ""
       master_ip:
         description: Master ip
         type: string
@@ -35,6 +40,9 @@ jobs:
     env:
       PULUMI_CONFIG_PASSPHRASE: ""
       K8S_AUDIENCE: ${{ secrets.K8S_AUDIENCE }}
+      SSH_USER: ${{ github.event.inputs.ssh_user }}
+      MASTER_IP: ${{ github.event.inputs.master_ip }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -46,6 +54,10 @@ jobs:
 
       - name: Setup pulumi
         uses: pulumi/actions@v6
+
+      - uses: ./.github/actions/setup-ssh
+        with:
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       # - name: Download latest pulumi state
       #   run: |
@@ -60,15 +72,27 @@ jobs:
       - name: Setup k3s auth
         uses: ./.github/actions/setup-k3s-auth
         with:
-          master_ip: ${{ github.event.inputs.master_ip }}
+          master_ip: "$MASTER_IP"
           k3s_cert: ${{ secrets.K3S_CERT }}
+
+      - name: Copy pulumi state
+        run: |
+          mkdir -p ./pulumi
+          echo "Copying pulumi state..."
+          scp -r ssh $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/* ./pulumi/ || echo "No pulumi state found"
+
+      - name: Check pulumi folder
+        run: |
+          echo "----------------"
+          ls ~/.pulumi/stacks
+          echo "----------------"
 
       - name: Install dependencies
         working-directory: ./infra
         run: npm install
 
       - name: Pulumi login
-        run: pulumi login
+        run: pulumi login --local
 
       - name: Choose stack
         working-directory: ./infra
@@ -80,13 +104,13 @@ jobs:
         if: ${{ github.event.inputs.action == 'deploy' }}
         run: pulumi up --yes
 
-      - name: Save pulumi state
-        if: ${{ github.event.inputs.action == 'deploy' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: pulumi-state-${{ github.event.inputs.environment }}
-          path: ~/.pulumi/stacks
-          retention-days: 400
+      # - name: Save pulumi state
+      #   if: ${{ github.event.inputs.action == 'deploy' }}
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: pulumi-state-${{ github.event.inputs.environment }}
+      #     path: ~/.pulumi/stacks
+      #     retention-days: 400
 
       - name: Remove stack
         working-directory: ./infra
@@ -95,6 +119,11 @@ jobs:
           pulumi destroy --yes
           pulumi stack rm ${{ github.event.inputs.environment }} --yes --force
 
+      - name: Save pulumi state
+        run: |
+          echo "Saving pulumi state..."
+          scp -r ~/.pulumi/* ssh $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/
+          echo "Pulumi state saved"
       # - name: Delete pulumi state
       #   if: ${{ github.event.inputs.action == 'delete' }}
       #   uses: actions/github-script@v7
