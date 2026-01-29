@@ -75,7 +75,7 @@ for i in "${!AGENT_IPS[@]}"; do
 done
 
 echo "Creating pulumi state folder..."
-if ssh $SSH_USER@$MASTER_IP "mkdir -p /var/pulumi/state"; then
+if ssh $SSH_USER@$MASTER_IP "mkdir -p /var/pulumi/state/.pulumi/stacks"; then
     echo "Pulumi state folder created"
 else
     echo "Failed to create pulumi state folder"
