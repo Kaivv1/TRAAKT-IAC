@@ -13,7 +13,7 @@ export const backendService = new k8s.core.v1.Service(
         spec: {
             type: "ClusterIP",
             selector: config.labels.backend,
-            ports: [{ port: 80, targetPort: 80 }],
+            ports: [{ port: 80, targetPort: 8080 }],
         },
     },
     { dependsOn: [backendNs] },

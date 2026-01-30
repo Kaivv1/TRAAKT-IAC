@@ -20,22 +20,22 @@ if (config.vars.createCoreResources) {
         },
         {
             dependsOn: certManagerNs,
-            transformations: [
-                (args) => {
-                    if (
-                        args.type === "kubernetes:admissionregistration.k8s.io/v1:ValidatingWebhookConfiguration" ||
-                        args.type === "kubernetes:admissionregistration.k8s.io/v1:MutatingWebhookConfiguration"
-                    ) {
-                        return {
-                            props: args.props,
-                            opts: pulumi.mergeOptions(args.opts, {
-                                ignoreChanges: ["metadata.annotations", "webhooks[*].clientConfig"],
-                            }),
-                        };
-                    }
-                    return undefined;
-                },
-            ],
+            // transformations: [
+            //     (args) => {
+            //         if (
+            //             args.type === "kubernetes:admissionregistration.k8s.io/v1:ValidatingWebhookConfiguration" ||
+            //             args.type === "kubernetes:admissionregistration.k8s.io/v1:MutatingWebhookConfiguration"
+            //         ) {
+            //             return {
+            //                 props: args.props,
+            //                 opts: pulumi.mergeOptions(args.opts, {
+            //                     ignoreChanges: ["metadata.annotations", "webhooks[*].clientConfig"],
+            //                 }),
+            //             };
+            //         }
+            //         return undefined;
+            //     },
+            // ],
         },
     );
 } else {
