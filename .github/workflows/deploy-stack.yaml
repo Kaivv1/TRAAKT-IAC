@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       ssh_user:
-        description: Choose a ssh user
+        description: SSH user
         type: string
         required: true
         default: ""
@@ -13,6 +13,10 @@ on:
         type: string
         default: ""
         required: true
+      deploy_core_resources:
+        description: Deploy this only once (first check if they exist, if you delete the stack they were deployed with, they will be deleted)
+        type: boolean
+        default: false
       environment:
         description: Environment
         required: true
@@ -98,7 +102,9 @@ jobs:
       - name: Deploy stack
         working-directory: ./infra
         if: ${{ github.event.inputs.action == 'deploy' }}
-        run: pulumi up --yes
+        run: |
+          pulumi config set infra:createCoreResources ${{ github.event.inputs.deploy_core_resources }}
+          pulumi up --yes
 
       # - name: Save pulumi state
       #   if: ${{ github.event.inputs.action == 'deploy' }}
