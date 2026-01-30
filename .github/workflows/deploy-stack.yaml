@@ -91,7 +91,7 @@ jobs:
         working-directory: ./infra
         if: ${{ github.event.inputs.action == 'deploy' }}
         run: |
-          pulumi up --yes
+          pulumi up --yes --skip-preview
 
       # - name: Save pulumi state
       #   if: ${{ github.event.inputs.action == 'deploy' }}
