@@ -20,6 +20,6 @@ const info = {
     },
 };
 
-const urls = backendIngress.spec.rules.apply((rules) => rules.map((rule) => `https://${rule.host}`));
+const urls = backendIngress.spec.rules.apply((rules) => rules.map((rule) => `https://${rule.host}/api`));
 
 export { info, urls };
