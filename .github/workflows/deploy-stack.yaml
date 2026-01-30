@@ -13,18 +13,6 @@ on:
         type: string
         default: ""
         required: true
-      deploy_core_resources:
-        description: Deploy core resources (do this once and delete it with the stack you deployed it with)
-        type: boolean
-        default: false
-      environment:
-        description: Environment
-        required: true
-        default: "dev"
-        type: choice
-        options:
-          - dev
-          - demo
       action:
         description: Action
         required: true
@@ -96,14 +84,13 @@ jobs:
       - name: Choose stack
         working-directory: ./infra
         run: |
-          pulumi stack select ${{ github.event.inputs.environment }} || \
-          pulumi stack select ${{ github.event.inputs.environment }} --create
+          pulumi stack select stage || \
+          pulumi stack select stage --create
 
       - name: Deploy stack
         working-directory: ./infra
         if: ${{ github.event.inputs.action == 'deploy' }}
         run: |
-          pulumi config set infra:createCoreResources ${{ github.event.inputs.deploy_core_resources }}
           pulumi up --yes
 
       # - name: Save pulumi state

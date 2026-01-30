@@ -5,12 +5,15 @@ const config = new pulumi.Config();
 export const stack = pulumi.getStack() as DeploymentStack;
 
 export const issuer = "letsencrypt";
-export const domains = !["dev", "demo"].includes(stack) ? ["traakt.com", "www.traakt.com"] : [`${stack}.traakt.com`];
+
+export const labels = {
+    backend: {
+        dev: { app: "backend", environment: "dev" },
+        demo: { app: "backend", environment: "demo" },
+    },
+};
 
 export const vars = {
     createCoreResources: config.getBoolean("createCoreResources") || false,
-};
-
-export const labels = {
-    backend: { tier: "backend", environment: stack },
+    domains: config.getObject<string[]>("domains") || ["*.traakt.com", "traakt.com"],
 };

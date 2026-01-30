@@ -99,6 +99,7 @@ export class TraefikMiddleware extends pulumi.ComponentResource {
         name: string,
         namespace: pulumi.Input<string>,
         labels: pulumi.Input<{ [key: string]: pulumi.Input<string> }>,
+        allowedOrigins: string[],
         methods: string[] = ["GET", "POST", "PUT", "PATCH", "DELETE"],
         provider?: k8s.Provider,
         opts?: pulumi.ComponentResourceOptions,
@@ -111,9 +112,12 @@ export class TraefikMiddleware extends pulumi.ComponentResource {
                 labels,
                 spec: {
                     headers: {
-                        accessControlAllowOriginList: config.domains.map((d) => `https://${d}`),
+                        accessControlAllowOriginList: allowedOrigins,
                         accessControlAllowMethods: methods,
                         accessControlAllowHeaders: ["*"],
+                        accessControlAllowCredentials: true,
+                        accessControlMaxAge: 3600,
+                        addVaryHeader: true,
                     },
                 },
                 provider: provider,

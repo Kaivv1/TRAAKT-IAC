@@ -1,9 +1,11 @@
-import { certManagerNs } from "./cert-manager";
+import { certManagerNs, certManager } from "./cert-manager";
 import { letsEncryptTest, letsEncrypt } from "./cluster-issuers";
 import { waitForCertManager } from "./jobs";
+import { certificate, copyTlsSecretToNamespace } from "./certificate";
 
-const info = {
-    namespace: certManagerNs.metadata.name,
+export const info = {
+    namespace: certManagerNs.metadata?.name,
+    certManager: "cert-manager",
     clusterIssuers: {
         letsEncrypt: letsEncrypt.metadata?.name,
         letsEncryptTest: letsEncryptTest.metadata?.name,
@@ -11,7 +13,15 @@ const info = {
     jobs: {
         waitForCertManager: waitForCertManager.metadata?.name,
     },
-    certManagerChart: "cert-manager",
+    certificate: certificate.metadata.name,
 };
 
-export { letsEncrypt, letsEncryptTest, info };
+export {
+    certManagerNs,
+    letsEncrypt,
+    letsEncryptTest,
+    waitForCertManager,
+    certManager,
+    certificate,
+    copyTlsSecretToNamespace,
+};

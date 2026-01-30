@@ -1,5 +1,5 @@
-import * as pulumi from "@pulumi/pulumi";
-import * as backend from "./services/backend";
+import * as backendDev from "./services/backend-dev";
+import * as backendDemo from "./services/backend-demo";
 import * as certManager from "./core/cert-manager";
 
 export const coreResources = {
@@ -7,9 +7,19 @@ export const coreResources = {
 };
 
 export const services = {
-    backend: backend.info,
+    dev: {
+        backend: backendDev.info,
+    },
+    demo: {
+        backend: backendDemo.info,
+    },
 };
 
 export const urls = {
-    backend: backend.urls,
+    dev: {
+        backend: backendDev.urls,
+    },
+    demo: {
+        backend: backendDemo.urls,
+    },
 };
