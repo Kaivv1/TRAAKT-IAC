@@ -14,7 +14,7 @@ on:
         default: ""
         required: true
       deploy_core_resources:
-        description: Deploy this only once (first check if they exist, if you delete the stack they were deployed with, they will be deleted)
+        description: Deploy core resources (do this once and delete it with the stack you deployed it with)
         type: boolean
         default: false
       environment:

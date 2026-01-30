@@ -15,7 +15,7 @@ export const backendDeployment = new k8s.apps.v1.Deployment(
                     containers: [
                         {
                             name: "api",
-                            image: "nginxdemos/hello:latest",
+                            image: "nmatsui/hello-world-api",
                             ports: [{ containerPort: 80 }],
                         },
                     ],
