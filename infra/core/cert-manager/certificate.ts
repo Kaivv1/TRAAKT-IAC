@@ -2,7 +2,7 @@ import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
 import * as config from "../../shared/config";
 import { certManager, certManagerNs } from "./cert-manager";
-import { waitForCertificate, waitForCertManager } from "./jobs";
+import { waitForCertManager } from "./jobs";
 import { letsEncrypt, letsEncryptTest } from "./cluster-issuers";
 
 export const certificate = new k8s.apiextensions.CustomResource(
@@ -28,62 +28,62 @@ export const certificate = new k8s.apiextensions.CustomResource(
     },
 );
 
-export const certWaiterSA = new k8s.core.v1.ServiceAccount(
-    "cert-waiter-sa",
-    {
-        metadata: {
-            name: "cert-waiter",
-            namespace: "cert-manager",
-        },
-    },
-    { dependsOn: certManagerNs },
-);
+// export const certWaiterSA = new k8s.core.v1.ServiceAccount(
+//     "cert-waiter-sa",
+//     {
+//         metadata: {
+//             name: "cert-waiter",
+//             namespace: "cert-manager",
+//         },
+//     },
+//     { dependsOn: certManagerNs },
+// );
 
-export const certWaiterRole = new k8s.rbac.v1.Role(
-    "cert-waiter-role",
-    {
-        metadata: {
-            name: "cert-waiter",
-            namespace: "cert-manager",
-        },
-        rules: [
-            {
-                apiGroups: ["cert-manager.io"],
-                resources: ["certificates"],
-                verbs: ["get"],
-            },
-            {
-                apiGroups: [""],
-                resources: ["secrets"],
-                verbs: ["get"],
-            },
-        ],
-    },
-    { dependsOn: certManagerNs },
-);
+// export const certWaiterRole = new k8s.rbac.v1.Role(
+//     "cert-waiter-role",
+//     {
+//         metadata: {
+//             name: "cert-waiter",
+//             namespace: "cert-manager",
+//         },
+//         rules: [
+//             {
+//                 apiGroups: ["cert-manager.io"],
+//                 resources: ["certificates"],
+//                 verbs: ["get"],
+//             },
+//             {
+//                 apiGroups: [""],
+//                 resources: ["secrets"],
+//                 verbs: ["get"],
+//             },
+//         ],
+//     },
+//     { dependsOn: certManagerNs },
+// );
 
-export const certWaiterRoleBinding = new k8s.rbac.v1.RoleBinding(
-    "cert-waiter-rb",
-    {
-        metadata: {
-            name: "cert-waiter",
-            namespace: "cert-manager",
-        },
-        subjects: [
-            {
-                kind: "ServiceAccount",
-                name: "cert-waiter",
-                namespace: "cert-manager",
-            },
-        ],
-        roleRef: {
-            kind: "Role",
-            name: "cert-waiter",
-            apiGroup: "rbac.authorization.k8s.io",
-        },
-    },
-    { dependsOn: [certWaiterSA, certWaiterRole] },
-);
+// export const certWaiterRoleBinding = new k8s.rbac.v1.RoleBinding(
+//     "cert-waiter-rb",
+//     {
+//         metadata: {
+//             name: "cert-waiter",
+//             namespace: "cert-manager",
+//         },
+//         subjects: [
+//             {
+//                 kind: "ServiceAccount",
+//                 name: "cert-waiter",
+//                 namespace: "cert-manager",
+//             },
+//         ],
+//         roleRef: {
+//             kind: "Role",
+//             name: "cert-waiter",
+//             apiGroup: "rbac.authorization.k8s.io",
+//         },
+//     },
+//     { dependsOn: [certWaiterSA, certWaiterRole] },
+// );
 
 export function copyTlsSecretToNamespace(
     resourceName: string,
@@ -93,7 +93,7 @@ export function copyTlsSecretToNamespace(
     const sourceSecret = k8s.core.v1.Secret.get(
         `${resourceName}-source`,
         pulumi.interpolate`cert-manager/tls-cert-secret`,
-        { dependsOn: waitForCertificate },
+        { dependsOn: certificate },
     );
 
     return new k8s.core.v1.Secret(
@@ -107,7 +107,7 @@ export function copyTlsSecretToNamespace(
             data: sourceSecret.data,
         },
         {
-            dependsOn: [waitForCertificate, ...(dependsOn || [])],
+            dependsOn: [certificate, ...(dependsOn || [])],
         },
     );
 }
