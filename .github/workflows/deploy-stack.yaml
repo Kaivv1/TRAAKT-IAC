@@ -92,7 +92,7 @@ jobs:
         if: ${{ github.event.inputs.action == 'deploy' }}
         run: |
           chmod +x ./scripts/deploy-infra.sh
-          ./scripts/deploy-infra.sh
+          ../scripts/deploy-infra.sh
 
       # - name: Save pulumi state
       #   if: ${{ github.event.inputs.action == 'deploy' }}
