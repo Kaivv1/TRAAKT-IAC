@@ -15,5 +15,5 @@ export const labels = {
 
 export const vars = {
     createCoreResources: config.getBoolean("createCoreResources") || false,
-    domains: config.getObject<string[]>("domains") || ["*.traakt.com", "traakt.com"],
+    domains: config.getObject<string[]>("domains") || ["dev.traakt.com", "demo.traakt.com", "traakt.com"],
 };
