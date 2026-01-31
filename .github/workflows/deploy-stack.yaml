@@ -91,7 +91,7 @@ jobs:
         working-directory: ./infra
         if: ${{ github.event.inputs.action == 'deploy' }}
         run: |
-          chmod +x ./scripts/deploy-infra.sh
+          chmod +x ../scripts/deploy-infra.sh
           ../scripts/deploy-infra.sh
 
       # - name: Save pulumi state
