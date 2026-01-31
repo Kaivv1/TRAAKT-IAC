@@ -30,7 +30,7 @@ export const backendRateLimitMiddlewareDev = TraefikMiddleware.createRateLimit(
 
 const middlewaresLiteral = pulumi.interpolate`${namespace}-${backendHttpsRedirectMiddlewareDev.name}${crd},${namespace}-${backendCorsMiddlewareDev.name}${crd},${namespace}-${backendRateLimitMiddlewareDev.name}${crd}`;
 
-const backendTlsSecretDev = copyTlsSecretToNamespace("backend-tls-secret", namespace, [
+const backendTlsSecretDev = copyTlsSecretToNamespace("backend-tls-secret-dev", namespace, [
     backendNsDev,
 ]) as pulumi.Input<pulumi.Resource>;
 
