@@ -89,7 +89,14 @@ export function copyTlsSecretToNamespace(
     resourceName: string,
     targetNamespace: pulumi.Input<string>,
     dependsOn?: pulumi.Input<pulumi.Resource>[],
-): k8s.core.v1.Secret {
+): k8s.core.v1.Secret | undefined {
+    const skipSecretCopy = process.env.PULUMI_SKIP_SECRET_COPY === "true";
+
+    if (skipSecretCopy) {
+        console.log(`Skipping secret copy for ${resourceName} (infrastructure phase)`);
+        return undefined;
+    }
+
     const sourceSecret = k8s.core.v1.Secret.get(
         `${resourceName}-source`,
         pulumi.interpolate`cert-manager/tls-cert-secret`,
