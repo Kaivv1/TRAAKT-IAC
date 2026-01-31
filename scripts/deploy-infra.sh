@@ -3,14 +3,10 @@ set -euo pipefail
 
 echo "🚀 Starting deployment..."
 export PULUMI_SKIP_SECRET_COPY=true
-
-echo ""
-echo "=== Phase 1: Deploying all infrastructure ==="
 pulumi up --yes --skip-preview || true
 
 echo ""
-echo "=== Waiting for cert-manager deployments to exist ===
-"
+echo "=== Waiting for cert-manager deployments to exist ==="
 TIMEOUT=180
 ELAPSED=0
 while [ $ELAPSED -lt $TIMEOUT ]; do
@@ -40,7 +36,7 @@ ELAPSED=0
 while [ $ELAPSED -lt $TIMEOUT ]; do
     if kubectl get validatingwebhookconfigurations cert-manager-webhook &>/dev/null; then
         echo "✅ Webhook configuration exists!"
-        sleep 10  # Extra buffer to ensure webhook is accepting requests
+        sleep 10
         break
     fi
     echo "⏳ Waiting for webhook... ($ELAPSED/$TIMEOUT seconds)"
@@ -49,7 +45,7 @@ while [ $ELAPSED -lt $TIMEOUT ]; do
 done
 
 echo ""
-echo "=== Deploying again to create ClusterIssuers and Certificate ==="
+echo "=== Deploying again to create ClusterIssuers, Certificate and the rest of the resources ==="
 export PULUMI_SKIP_SECRET_COPY=true
 pulumi up --yes --skip-preview || true
 
@@ -67,12 +63,7 @@ while [ $ELAPSED -lt $TIMEOUT ]; do
     ELAPSED=$((ELAPSED + 5))
 done
 
-if [ $ELAPSED -ge $TIMEOUT ]; then
-    echo "❌ Certificate resource not created"
-    exit 1
-fi
-
-kubectl wait --for=condition=Ready certificate/tls-cert -n cert-manager --timeout=10m || {
+kubectl wait --for=condition=Ready certificate/tls-cert -n cert-manager --timeout=6m || {
     echo "❌ Certificate failed. Checking details..."
     kubectl describe certificate tls-cert -n cert-manager
     kubectl get challenges -n cert-manager
@@ -83,7 +74,7 @@ kubectl wait --for=condition=Ready certificate/tls-cert -n cert-manager --timeou
 echo "✅ Certificate ready!"
 
 echo ""
-echo "=== Phase 2: Deploying services ==="
+echo "=== Redeploying to copy the cert secret in the namespaces it will be used ==="
 unset PULUMI_SKIP_SECRET_COPY
 pulumi up --yes --skip-preview
 
