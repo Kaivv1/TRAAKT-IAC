@@ -51,7 +51,7 @@ export const backendIngressDev = new k8s.networking.v1.Ingress(
             tls: [
                 {
                     hosts: ["dev.traakt.com"],
-                    secretName: "tls-cert",
+                    secretName: "tls-cert-secret",
                 },
             ],
             rules: [

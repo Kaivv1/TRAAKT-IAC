@@ -1,12 +1,17 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "🚀 Starting deployment..."
-export PULUMI_SKIP_SECRET_COPY=true
-pulumi up --yes --skip-preview || true
+ENV=$1
+
+echo "🚀 Starting deployment for: $ENV"
 
 echo ""
-echo "=== Waiting for cert-manager deployments to exist ==="
+echo "=== Phase 1: Deploying cert-manager ==="
+export PULUMI_SKIP_SECRET_COPY=true
+pulumi up --target '*cert-manager*' --yes --skip-preview || true
+
+echo ""
+echo "=== Waiting for cert-manager ==="
 TIMEOUT=180
 ELAPSED=0
 while [ $ELAPSED -lt $TIMEOUT ]; do
@@ -14,69 +19,86 @@ while [ $ELAPSED -lt $TIMEOUT ]; do
         echo "✅ cert-manager exists!"
         break
     fi
-    echo "⏳ Waiting for cert-manager deployment... ($ELAPSED/$TIMEOUT seconds)"
+    echo "⏳ Waiting... ($ELAPSED/$TIMEOUT seconds)"
     sleep 5
     ELAPSED=$((ELAPSED + 5))
 done
 
-echo ""
-echo "=== Waiting for cert-manager to be ready ==="
+if [ $ELAPSED -ge $TIMEOUT ]; then
+    echo "❌ cert-manager not found"
+    exit 1
+fi
+
 kubectl wait --for=condition=Available deployment/cert-manager -n cert-manager --timeout=5m
 kubectl wait --for=condition=Available deployment/cert-manager-webhook -n cert-manager --timeout=5m
 kubectl wait --for=condition=Available deployment/cert-manager-cainjector -n cert-manager --timeout=5m
 
 echo ""
-echo "=== Waiting for webhook to be fully ready ==="
-echo "Giving webhook time to generate certificates..."
-sleep 30
-
-echo "Testing webhook readiness..."
-TIMEOUT=60
-ELAPSED=0
-while [ $ELAPSED -lt $TIMEOUT ]; do
-    if kubectl get validatingwebhookconfigurations cert-manager-webhook &>/dev/null; then
-        echo "✅ Webhook configuration exists!"
-        sleep 10
-        break
-    fi
-    echo "⏳ Waiting for webhook... ($ELAPSED/$TIMEOUT seconds)"
-    sleep 5
-    ELAPSED=$((ELAPSED + 5))
-done
+echo "=== Waiting for webhook ==="
+sleep 40
 
 echo ""
-echo "=== Deploying again to create ClusterIssuers, Certificate and the rest of the resources ==="
-export PULUMI_SKIP_SECRET_COPY=true
-pulumi up --yes --skip-preview || true
+echo "=== Phase 2: Deploying ClusterIssuers, Certificate, and $ENV services ==="
+
+if [ "$ENV" = "all" ]; then
+    pulumi up --target "*letsencrypt*" --target "*tls-cert*" \
+              --target "*backend-dev*" --target "*backend-demo*" \
+              --yes --skip-preview || true
+elif [ "$ENV" = "dev" ]; then
+    pulumi up --target "*letsencrypt*" --target "*tls-cert*" \
+              --target "*backend-dev*" \
+              --yes --skip-preview || true
+else
+    pulumi up --target "*letsencrypt*" --target "*tls-cert*" \
+              --target "*backend-demo*" \
+              --yes --skip-preview || true
+fi
 
 echo ""
-echo "=== Waiting for certificate to be ready ==="
-TIMEOUT=60
+echo "=== Waiting for certificate ==="
+TIMEOUT=120
 ELAPSED=0
 while [ $ELAPSED -lt $TIMEOUT ]; do
     if kubectl get certificate tls-cert -n cert-manager &>/dev/null; then
-        echo "✅ Certificate resource exists!"
+        echo "✅ Certificate exists!"
         break
     fi
-    echo "⏳ Waiting for certificate resource... ($ELAPSED/$TIMEOUT seconds)"
+    echo "⏳ Waiting... ($ELAPSED/$TIMEOUT seconds)"
     sleep 5
     ELAPSED=$((ELAPSED + 5))
 done
 
-kubectl wait --for=condition=Ready certificate/tls-cert -n cert-manager --timeout=6m || {
-    echo "❌ Certificate failed. Checking details..."
+if [ $ELAPSED -ge $TIMEOUT ]; then
+    echo "❌ Certificate not created"
+    exit 1
+fi
+
+kubectl wait --for=condition=Ready certificate/tls-cert -n cert-manager --timeout=10m || {
+    echo "❌ Certificate failed"
     kubectl describe certificate tls-cert -n cert-manager
+    kubectl get certificaterequest -n cert-manager
     kubectl get challenges -n cert-manager
-    kubectl describe challenge -n cert-manager 2>/dev/null || echo "No challenges found"
+    kubectl describe challenge -n cert-manager 2>/dev/null || true
     exit 1
 }
 
 echo "✅ Certificate ready!"
 
 echo ""
-echo "=== Redeploying to copy the cert secret in the namespaces it will be used ==="
+echo "=== Phase 3: Copying TLS secrets to namespaces ==="
 unset PULUMI_SKIP_SECRET_COPY
-pulumi up --yes --skip-preview
+
+if [ "$ENV" = "all" ]; then
+    pulumi up --target "*backend-dev*" --target "*frontend-dev*" \
+              --target "*backend-demo*" --target "*frontend-demo*" \
+              --yes --skip-preview
+elif [ "$ENV" = "dev" ]; then
+    pulumi up --target "*backend-dev*" --target "*frontend-dev*" \
+              --yes --skip-preview
+else
+    pulumi up --target "*backend-demo*" --target "*frontend-demo*" \
+              --yes --skip-preview
+fi
 
 echo ""
-echo "✅ Deployment complete!"
+echo "✅ Deployment complete for $ENV!"

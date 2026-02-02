@@ -4,7 +4,7 @@ import type { DeploymentStack } from "./types";
 const config = new pulumi.Config();
 export const stack = pulumi.getStack() as DeploymentStack;
 
-export const issuer = "letsencrypt";
+export const issuer = "letsencrypt-test";
 
 export const labels = {
     backend: {
