@@ -10,6 +10,7 @@ export PULUMI_SKIP_SECRET_COPY=true
 
 pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Namespace::cert-manager" \
           --target "urn:pulumi:stage::infra::kubernetes:helm.sh/v3:Chart::cert-manager" \
+          --target "urn:pulumi:stage::infra::kubernetes:batch/v1:Job::wait-cert-manager" \
           --yes --skip-preview || true
 
 echo ""
@@ -48,8 +49,6 @@ if [ $ELAPSED -ge $TIMEOUT ]; then
     pulumi stack export | jq '.deployment.resources[] | select(.urn | contains("cert-manager")) | .urn'
     exit 1
 fi
-
-pulumi up --target "urn:pulumi:stage::infra::kubernetes:batch/v1:Job::wait-cert-manager" --yes --skip-preview || true
 
 echo ""
 echo "=== Waiting for cert-manager to be ready ==="
