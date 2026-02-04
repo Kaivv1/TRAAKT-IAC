@@ -7,10 +7,7 @@ echo "🚀 Starting deployment..."
 echo ""
 echo "=== Phase 1: Deploying cert-manager namespace and Helm chart ==="
 export PULUMI_SKIP_SECRET_COPY=true
-
-pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Namespace::cert-manager" \
-          --target "urn:pulumi:stage::infra::kubernetes:helm.sh/v3:Chart::cert-manager" \
-          --yes --skip-preview
+pulumi up --yes --skip-preview
 
 echo ""
 echo "Waiting 90 seconds for Helm chart to create all resources..."
@@ -31,20 +28,6 @@ while [ $ELAPSED -lt $TIMEOUT ]; do
     ELAPSED=$((ELAPSED + 15))
 done
 
-# if [ $ELAPSED -ge $TIMEOUT ]; then
-#     echo "❌ cert-manager deployment not found"
-#     echo ""
-#     echo "What's in the namespace:"
-#     kubectl get all -n cert-manager
-#     echo ""
-#     echo "Checking CRDs:"
-#     kubectl get crd | grep cert-manager || echo "No cert-manager CRDs found"
-#     echo ""
-#     echo "Pulumi state:"
-#     pulumi stack export | jq '.deployment.resources[] | select(.urn | contains("cert-manager")) | .urn'
-#     exit 1
-# fi
-
 echo ""
 echo "=== Waiting for cert-manager to be ready ==="
 kubectl wait --for=condition=Available deployment/cert-manager -n cert-manager --timeout=5m
@@ -58,9 +41,10 @@ sleep 40
 echo ""
 echo "=== Phase 2: Deploying ClusterIssuers and Certificate ==="
 
-pulumi up --target "urn:pulumi:stage::infra::kubernetes:cert-manager.io/v1:ClusterIssuer::letsencrypt" --yes --skip-preview 
-pulumi up --target "urn:pulumi:stage::infra::kubernetes:cert-manager.io/v1:ClusterIssuer::letsencrypt-test" --yes --skip-preview 
-pulumi up --target "urn:pulumi:stage::infra::kubernetes:cert-manager.io/v1:Certificate::tls-cert" --yes --skip-preview 
+pulumi up --target "urn:pulumi:stage::infra::kubernetes:cert-manager.io/v1:ClusterIssuer::letsencrypt" \
+          --target "urn:pulumi:stage::infra::kubernetes:cert-manager.io/v1:ClusterIssuer::letsencrypt-test" \
+          --target "urn:pulumi:stage::infra::kubernetes:cert-manager.io/v1:Certificate::tls-cert" \
+          --yes --skip-preview
 
 echo ""
 echo "=== Waiting for certificate ==="

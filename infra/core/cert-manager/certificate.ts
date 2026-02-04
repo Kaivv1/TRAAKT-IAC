@@ -24,7 +24,7 @@ export const certificate = new k8s.apiextensions.CustomResource(
         },
     },
     {
-        dependsOn: [certManagerNs, certManager, letsEncrypt, letsEncryptTest],
+        dependsOn: [letsEncrypt, letsEncryptTest],
     },
 );
 
