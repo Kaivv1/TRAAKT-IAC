@@ -12,6 +12,6 @@
         "noImplicitReturns": true,
         "forceConsistentCasingInFileNames": true
     },
-    "include": ["*/**/*.ts", "types.d.ts", "utils.ts"]
+    "include": ["*/**/*.ts"]
     // "files": ["*/**/*.ts"]
 }
