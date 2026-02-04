@@ -5,7 +5,7 @@ ENV=$1
 echo "🚀 Starting deployment..."
 
 export PULUMI_SKIP_SECRET_COPY=true
-pulumi config set environment "${ENV}"
+pulumi config set infra:environment "$ENV"
 pulumi up --yes --skip-preview
 
 echo ""
@@ -33,7 +33,7 @@ echo "✅ Certificate ready!"
 echo ""
 echo "Copying certificate secret in namespaces for ingress..."
 unset PULUMI_SKIP_SECRET_COPY
-pulumi config set environment "${ENV}"
+pulumi config set infra:environment "$ENV"
 pulumi up --yes --no-preview
 
 echo ""

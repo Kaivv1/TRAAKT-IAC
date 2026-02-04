@@ -1,7 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 import type { ConfigVars, Environment } from "./types";
 
-const config = new pulumi.Config();
+const config = new pulumi.Config("infra");
 export const issuer = "letsencrypt-test";
 
 export const vars: ConfigVars = {

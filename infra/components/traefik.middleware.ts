@@ -30,7 +30,7 @@ export class TraefikMiddleware extends pulumi.ComponentResource {
                 },
                 spec: args.spec,
             },
-            { parent: this, provider: args.provider },
+            { parent: this, provider: args.provider, protect: true },
         );
 
         this.name = this.middleware.metadata.name;
