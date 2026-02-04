@@ -13,6 +13,7 @@ export const backendHttpsRedirectMiddleware = TraefikMiddleware.createHttpsRedir
     `backend-https-redirect-${environment}`,
     namespace,
     config.labels.backend,
+    { dependsOn: backendNs },
 );
 
 export const backendCorsMiddleware = TraefikMiddleware.createCors(
@@ -20,12 +21,14 @@ export const backendCorsMiddleware = TraefikMiddleware.createCors(
     namespace,
     config.labels.backend,
     [`https://${environment}.traakt.com`],
+    { dependsOn: backendNs },
 );
 
 export const backendRateLimitMiddleware = TraefikMiddleware.createRateLimit(
     `backend-rate-limit-${environment}`,
     namespace,
     config.labels.backend,
+    { dependsOn: backendNs },
 );
 
 const middlewaresLiteral = pulumi.interpolate`${namespace}-${backendHttpsRedirectMiddleware.name}${crd},${namespace}-${backendCorsMiddleware.name}${crd},${namespace}-${backendRateLimitMiddleware.name}${crd}`;

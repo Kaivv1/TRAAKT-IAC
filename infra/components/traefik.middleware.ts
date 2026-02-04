@@ -47,8 +47,8 @@ export class TraefikMiddleware extends pulumi.ComponentResource {
         name: string,
         namespace: pulumi.Input<string>,
         labels: pulumi.Input<{ [key: string]: pulumi.Input<string> }>,
-        provider?: k8s.Provider,
         opts?: pulumi.ComponentResourceOptions,
+        provider?: k8s.Provider,
     ): TraefikMiddleware {
         return new TraefikMiddleware(
             name,
@@ -72,10 +72,10 @@ export class TraefikMiddleware extends pulumi.ComponentResource {
         name: string,
         namespace: pulumi.Input<string>,
         labels: pulumi.Input<{ [key: string]: pulumi.Input<string> }>,
+        opts?: pulumi.ComponentResourceOptions,
         average: number = 20,
         burst: number = 40,
         provider?: k8s.Provider,
-        opts?: pulumi.ComponentResourceOptions,
     ): TraefikMiddleware {
         return new TraefikMiddleware(
             name,
@@ -100,9 +100,9 @@ export class TraefikMiddleware extends pulumi.ComponentResource {
         namespace: pulumi.Input<string>,
         labels: pulumi.Input<{ [key: string]: pulumi.Input<string> }>,
         allowedOrigins: string[],
+        opts?: pulumi.ComponentResourceOptions,
         methods: string[] = ["GET", "POST", "PUT", "PATCH", "DELETE"],
         provider?: k8s.Provider,
-        opts?: pulumi.ComponentResourceOptions,
     ): TraefikMiddleware {
         return new TraefikMiddleware(
             name,
