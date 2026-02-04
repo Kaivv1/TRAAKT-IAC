@@ -1,7 +1,7 @@
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
 import * as config from "../../shared/config";
-import { certManager, certManagerNs } from "./cert-manager";
+import { certManagerNs } from "./cert-manager";
 import { waitForCertManager } from "./jobs";
 import { letsEncrypt, letsEncryptTest } from "./cluster-issuers";
 
@@ -24,7 +24,8 @@ export const certificate = new k8s.apiextensions.CustomResource(
         },
     },
     {
-        dependsOn: [letsEncrypt, letsEncryptTest],
+        dependsOn: [waitForCertManager, letsEncrypt, letsEncryptTest],
+        protect: true,
     },
 );
 
@@ -58,6 +59,7 @@ export function copyTlsSecretToNamespace(
         },
         {
             dependsOn: [certificate, ...(dependsOn || [])],
+            protect: true,
         },
     );
 }

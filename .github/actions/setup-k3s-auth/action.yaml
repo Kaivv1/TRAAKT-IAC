@@ -1,5 +1,6 @@
 name: "Setup k3s Authentication"
 description: "Authenticate to k3s using GitHub OIDC"
+
 inputs:
   master_ip:
     description: "k3s master IP"

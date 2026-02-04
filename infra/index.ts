@@ -1,25 +1,19 @@
-import * as backendDev from "./services/backend-dev";
-import * as backendDemo from "./services/backend-demo";
+import * as backend from "./services/backend";
 import * as certManager from "./core/cert-manager";
+import * as config from "./shared/config";
 
 export const coreResources = {
     certManager: certManager.info,
 };
 
 export const services = {
-    dev: {
-        backend: backendDev.info,
-    },
-    demo: {
-        backend: backendDemo.info,
+    [config.vars.environment]: {
+        backend: backend.info,
     },
 };
 
 export const urls = {
-    dev: {
-        backend: backendDev.urls,
-    },
-    demo: {
-        backend: backendDemo.urls,
+    [config.vars.environment]: {
+        backend: backend.urls,
     },
 };

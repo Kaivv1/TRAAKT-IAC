@@ -21,7 +21,7 @@ export const waitForCertManager = new k8s.batch.v1.Job(
             },
         },
     },
-    { dependsOn: certManager },
+    { dependsOn: certManager, protect: true },
 );
 
 // export const waitForCertificate = new k8s.batch.v1.Job(

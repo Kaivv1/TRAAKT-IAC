@@ -31,7 +31,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v6
 
-      - uses: ./.github/actions/setup-ssh
+      - name: Setup SSH
+        uses: ./.github/actions/setup-ssh
         with:
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
 

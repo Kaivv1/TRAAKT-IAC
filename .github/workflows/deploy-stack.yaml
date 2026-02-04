@@ -17,9 +17,7 @@ on:
         type: choice
         required: true
         description: Select an environment
-        default: all
         options:
-          - all
           - dev
           - demo
       action:
@@ -43,7 +41,6 @@ jobs:
       K8S_AUDIENCE: ${{ secrets.K8S_AUDIENCE }}
       SSH_USER: ${{ github.event.inputs.ssh_user }}
       MASTER_IP: ${{ github.event.inputs.master_ip }}
-      ENVIRONMENT: ${{ github.event.inputs.environment }}
 
     steps:
       - name: Checkout
@@ -102,7 +99,7 @@ jobs:
         if: ${{ github.event.inputs.action == 'deploy' }}
         run: |
           chmod +x ../scripts/deploy-infra.sh
-          ../scripts/deploy-infra.sh ENV="${ENVIRONMENT}"
+          ../scripts/deploy-infra.sh ENV=${{ github.event.inputs.environment }}
 
       # - name: Save pulumi state
       #   if: ${{ github.event.inputs.action == 'deploy' }}
