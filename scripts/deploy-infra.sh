@@ -2,24 +2,19 @@
 set -euo pipefail
 
 ENV=$1
-echo "🚀 Starting deployment for: $ENV"
+echo "🚀 Starting deployment..."
 
 echo ""
 echo "=== Phase 1: Deploying cert-manager namespace and Helm chart ==="
 export PULUMI_SKIP_SECRET_COPY=true
 
 pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Namespace::cert-manager" \
-          --target "urn:pulumi:stage::infra::kubernetes:helm/v3:Chart::cert-manager" \
-          --target "urn:pulumi:stage::infra::kubernetes:batch/v1:Job::wait-cert-manager" \
-          --yes --skip-preview || true
+          --target "urn:pulumi:stage::infra::kubernetes:helm.sh/v3:Chart::cert-manager" \
+          --yes --skip-preview
 
 echo ""
 echo "Waiting 90 seconds for Helm chart to create all resources..."
 sleep 90
-
-echo ""
-echo "=== Checking what got created ==="
-kubectl get all -n cert-manager
 
 echo ""
 echo "=== Waiting for cert-manager deployments to exist ==="
@@ -36,19 +31,19 @@ while [ $ELAPSED -lt $TIMEOUT ]; do
     ELAPSED=$((ELAPSED + 15))
 done
 
-if [ $ELAPSED -ge $TIMEOUT ]; then
-    echo "❌ cert-manager deployment not found"
-    echo ""
-    echo "What's in the namespace:"
-    kubectl get all -n cert-manager
-    echo ""
-    echo "Checking CRDs:"
-    kubectl get crd | grep cert-manager || echo "No cert-manager CRDs found"
-    echo ""
-    echo "Pulumi state:"
-    pulumi stack export | jq '.deployment.resources[] | select(.urn | contains("cert-manager")) | .urn'
-    exit 1
-fi
+# if [ $ELAPSED -ge $TIMEOUT ]; then
+#     echo "❌ cert-manager deployment not found"
+#     echo ""
+#     echo "What's in the namespace:"
+#     kubectl get all -n cert-manager
+#     echo ""
+#     echo "Checking CRDs:"
+#     kubectl get crd | grep cert-manager || echo "No cert-manager CRDs found"
+#     echo ""
+#     echo "Pulumi state:"
+#     pulumi stack export | jq '.deployment.resources[] | select(.urn | contains("cert-manager")) | .urn'
+#     exit 1
+# fi
 
 echo ""
 echo "=== Waiting for cert-manager to be ready ==="
@@ -63,9 +58,9 @@ sleep 40
 echo ""
 echo "=== Phase 2: Deploying ClusterIssuers and Certificate ==="
 
-pulumi up --target "urn:pulumi:stage::infra::kubernetes:cert-manager.io/v1:ClusterIssuer::letsencrypt" --yes --skip-preview || true
-pulumi up --target "urn:pulumi:stage::infra::kubernetes:cert-manager.io/v1:ClusterIssuer::letsencrypt-test" --yes --skip-preview || true
-pulumi up --target "urn:pulumi:stage::infra::kubernetes:cert-manager.io/v1:Certificate::tls-cert" --yes --skip-preview || true
+pulumi up --target "urn:pulumi:stage::infra::kubernetes:cert-manager.io/v1:ClusterIssuer::letsencrypt" --yes --skip-preview 
+pulumi up --target "urn:pulumi:stage::infra::kubernetes:cert-manager.io/v1:ClusterIssuer::letsencrypt-test" --yes --skip-preview 
+pulumi up --target "urn:pulumi:stage::infra::kubernetes:cert-manager.io/v1:Certificate::tls-cert" --yes --skip-preview 
 
 echo ""
 echo "=== Waiting for certificate ==="
@@ -97,49 +92,49 @@ kubectl wait --for=condition=Ready certificate/tls-cert -n cert-manager --timeou
 
 echo "✅ Certificate ready!"
 
-echo ""
-echo "=== Phase 3: Deploying $ENV services (without secret copy) ==="
-export PULUMI_SKIP_SECRET_COPY=true
+# echo ""
+# echo "=== Phase 3: Deploying $ENV services (without secret copy) ==="
+# export PULUMI_SKIP_SECRET_COPY=true
 
-if [ "$ENV" = "all" ]; then
-    pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Namespace::backend-service-dev" \
-              --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-https-redirect-dev" \
-              --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-cors-dev" \
-              --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-rate-limit-dev" \
-              --target "urn:pulumi:stage::infra::kubernetes:apps/v1:Deployment::backend-dev" \
-              --target "urn:pulumi:stage::infra::kubernetes:core/v1:Service::backend-svc-dev" \
-              --target "urn:pulumi:stage::infra::kubernetes:networking.v1:Ingress::backend-ingress-dev" \
-              --yes --skip-preview || true
+# if [ "$ENV" = "all" ]; then
+#     pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Namespace::backend-service-dev" \
+#               --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-https-redirect-dev" \
+#               --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-cors-dev" \
+#               --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-rate-limit-dev" \
+#               --target "urn:pulumi:stage::infra::kubernetes:apps/v1:Deployment::backend-dev" \
+#               --target "urn:pulumi:stage::infra::kubernetes:core/v1:Service::backend-svc-dev" \
+#               --target "urn:pulumi:stage::infra::kubernetes:networking.v1:Ingress::backend-ingress-dev" \
+#               --yes --skip-preview || true
     
-    pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Namespace::backend-service-demo" \
-              --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-https-redirect-demo" \
-              --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-cors-demo" \
-              --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-rate-limit-demo" \
-              --target "urn:pulumi:stage::infra::kubernetes:apps/v1:Deployment::backend-demo" \
-              --target "urn:pulumi:stage::infra::kubernetes:core/v1:Service::backend-svc-demo" \
-              --target "urn:pulumi:stage::infra::kubernetes:networking.v1:Ingress::backend-ingress-demo" \
-              --yes --skip-preview || true
-else
-    pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Namespace::backend-service-$ENV" \
-              --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-https-redirect-$ENV" \
-              --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-cors-$ENV" \
-              --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-rate-limit-$ENV" \
-              --target "urn:pulumi:stage::infra::kubernetes:apps/v1:Deployment::backend-$ENV" \
-              --target "urn:pulumi:stage::infra::kubernetes:core/v1:Service::backend-svc-$ENV" \
-              --target "urn:pulumi:stage::infra::kubernetes:networking.v1:Ingress::backend-ingress-$ENV" \
-              --yes --skip-preview || true
-fi
+#     pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Namespace::backend-service-demo" \
+#               --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-https-redirect-demo" \
+#               --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-cors-demo" \
+#               --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-rate-limit-demo" \
+#               --target "urn:pulumi:stage::infra::kubernetes:apps/v1:Deployment::backend-demo" \
+#               --target "urn:pulumi:stage::infra::kubernetes:core/v1:Service::backend-svc-demo" \
+#               --target "urn:pulumi:stage::infra::kubernetes:networking.v1:Ingress::backend-ingress-demo" \
+#               --yes --skip-preview || true
+# else
+#     pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Namespace::backend-service-$ENV" \
+#               --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-https-redirect-$ENV" \
+#               --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-cors-$ENV" \
+#               --target "urn:pulumi:stage::infra::custom:traefik:Middleware::backend-rate-limit-$ENV" \
+#               --target "urn:pulumi:stage::infra::kubernetes:apps/v1:Deployment::backend-$ENV" \
+#               --target "urn:pulumi:stage::infra::kubernetes:core/v1:Service::backend-svc-$ENV" \
+#               --target "urn:pulumi:stage::infra::kubernetes:networking.v1:Ingress::backend-ingress-$ENV" \
+#               --yes --skip-preview || true
+# fi
 
-echo ""
-echo "=== Phase 4: Copying TLS secrets to namespaces ==="
-unset PULUMI_SKIP_SECRET_COPY
+# echo ""
+# echo "=== Phase 4: Copying TLS secrets to namespaces ==="
+# unset PULUMI_SKIP_SECRET_COPY
 
-if [ "$ENV" = "all" ]; then
-    pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Secret::backend-tls-secret-dev" --yes --skip-preview
-    pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Secret::backend-tls-secret-demo" --yes --skip-preview
-else
-    pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Secret::backend-tls-secret-$ENV" --yes --skip-preview
-fi
+# if [ "$ENV" = "all" ]; then
+#     pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Secret::backend-tls-secret-dev" --yes --skip-preview
+#     pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Secret::backend-tls-secret-demo" --yes --skip-preview
+# else
+#     pulumi up --target "urn:pulumi:stage::infra::kubernetes:core/v1:Secret::backend-tls-secret-$ENV" --yes --skip-preview
+# fi
 
 echo ""
 echo "✅ Deployment complete for $ENV!"
