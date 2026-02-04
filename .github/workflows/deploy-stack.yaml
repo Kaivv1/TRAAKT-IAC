@@ -96,13 +96,14 @@ jobs:
         run: |
           pulumi stack select stage || \
           pulumi stack select stage --create
+          pulumi stack --show-urns
 
-      - name: Deploy stack
-        working-directory: ./infra
-        if: ${{ github.event.inputs.action == 'deploy' }}
-        run: |
-          chmod +x ../scripts/deploy-infra.sh
-          ../scripts/deploy-infra.sh ENV="${ENVIRONMENT}"
+      # - name: Deploy stack
+      #   working-directory: ./infra
+      #   if: ${{ github.event.inputs.action == 'deploy' }}
+      #   run: |
+      #     chmod +x ../scripts/deploy-infra.sh
+      #     ../scripts/deploy-infra.sh ENV="${ENVIRONMENT}"
 
       # - name: Save pulumi state
       #   if: ${{ github.event.inputs.action == 'deploy' }}
@@ -112,34 +113,14 @@ jobs:
       #     path: ~/.pulumi/stacks
       #     retention-days: 400
 
-      - name: Remove stack
-        working-directory: ./infra
-        if: ${{ github.event.inputs.action == 'delete' }}
-        run: |
-          pulumi destroy --yes
-
-      - name: Save pulumi state
-        run: |
-          echo "Saving pulumi state..."
-          scp -r ~/.pulumi/stacks/* $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/stacks/
-          echo "Pulumi state saved"
-      # - name: Delete pulumi state
+      # - name: Remove stack
+      #   working-directory: ./infra
       #   if: ${{ github.event.inputs.action == 'delete' }}
-      #   uses: actions/github-script@v7
-      #   continue-on-error: true
-      #   with:
-      #     script: |
-      #       const artifacts = await github.rest.actions.listArtifactsForRepo({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #       });
+      #   run: |
+      #     pulumi destroy --yes
 
-      #       for (const artifact of artifacts.data.artifacts) {
-      #         if (artifact.name === 'pulumi-state-${{ github.event.inputs.environment }}') {
-      #           await github.rest.actions.deleteArtifact({
-      #             owner: context.repo.owner,
-      #             repo: context.repo.repo,
-      #             artifact_id: artifact.id,
-      #           });
-      #         }
-      #       }
+      # - name: Save pulumi state
+      #   run: |
+      #     echo "Saving pulumi state..."
+      #     scp -r ~/.pulumi/stacks/* $SSH_USER@$MASTER_IP:/var/pulumi/state/.pulumi/stacks/
+      #     echo "Pulumi state saved"
