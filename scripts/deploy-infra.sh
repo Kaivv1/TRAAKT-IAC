@@ -34,7 +34,7 @@ echo ""
 echo "Copying certificate secret in namespaces for ingress..."
 unset PULUMI_SKIP_SECRET_COPY
 pulumi config set infra:environment "$ENV"
-pulumi up --yes --no-preview
+pulumi up --yes --skip-preview
 
 echo ""
 echo "✅ Deployment complete for ${ENV}!"
