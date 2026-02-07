@@ -60,16 +60,6 @@ jobs:
         with:
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # - name: Download latest pulumi state
-      #   run: |
-      #     npm install @octokit/rest
-      #     node ./scripts/download-artifact.js
-      #   env:
-      #     GITHUB_TOKEN: ${{ github.token }}
-      #     GITHUB_REPOSITORY: ${{ github.repository }}
-      #     ENVIRONMENT: ${{ github.event.inputs.environment }}
-      #   continue-on-error: true
-
       - name: Setup k3s auth
         uses: ./.github/actions/setup-k3s-auth
         with:
@@ -130,6 +120,7 @@ jobs:
         working-directory: ./infra/core
         if: github.event.inputs.stack == 'core' && github.event.inputs.action == 'delete'
         run: |
+          pulumi stack select core
           pulumi destroy --yes
 
       - name: Remove Environment Stack
