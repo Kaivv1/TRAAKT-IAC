@@ -13,13 +13,14 @@ on:
         type: string
         default: ""
         required: true
-      # environment:
-      #   type: choice
-      #   required: true
-      #   description: Select an environment
-      #   options:
-      #     - dev
-      #     - demo
+      stack:
+        type: choice
+        required: true
+        description: Select a stack
+        options:
+          - core
+          - dev
+          - demo
       action:
         description: Action
         required: true
@@ -89,6 +90,7 @@ jobs:
         run: pulumi login --local
 
       - name: Deploy Core Stack
+        if: ${{ github.event.inputs.stack == 'core' }} && ${{ github.event.inputs.action == 'deploy' }}
         working-directory: ./infra/core
         run: |
           pulumi stack select core || \
@@ -115,24 +117,24 @@ jobs:
               exit 1
           }
           echo "✅ Certificate ready!"
-      # - name: Deploy stack
-      #   working-directory: ./infra
-      #   if: ${{ github.event.inputs.action == 'deploy' }}
-      #   run: |
-      #     chmod +x ../scripts/deploy-infra.sh
-      #     ../scripts/deploy-infra.sh ${{ github.event.inputs.environment }}
 
-      # - name: Save pulumi state
-      #   if: ${{ github.event.inputs.action == 'deploy' }}
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: pulumi-state-${{ github.event.inputs.environment }}
-      #     path: ~/.pulumi/stacks
-      #     retention-days: 400
+      - name: Deploy Environment Stack
+        working-directory: ./infra/stacks/${{ github.event.inputs.stack }}
+        if: ${{ github.event.inputs.action == 'deploy' }} && ${{ github.event.inputs.stack != 'core' }}
+        run: |
+          pulumi stack select ${{ github.event.inputs.stack }} || \
+          pulumi stack select ${{ github.event.inputs.stack }} --create
+          pulumi up --yes --skip-preview
 
       - name: Remove Core Stack
         working-directory: ./infra/core
-        if: ${{ github.event.inputs.action == 'delete' }}
+        if: ${{ github.event.inputs.stack == 'core' }} && ${{ github.event.inputs.action == 'delete' }}
+        run: |
+          pulumi destroy --yes
+
+      - name: Remove Environment Stack
+        working-directory: ./infra/stacks/${{ github.event.inputs.stack }}
+        if: ${{ github.event.inputs.stack != 'core' }} && ${{ github.event.inputs.action == 'delete' }}
         run: |
           pulumi destroy --yes
 
