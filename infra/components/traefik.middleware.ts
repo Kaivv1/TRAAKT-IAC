@@ -124,4 +124,29 @@ export class TraefikMiddleware extends pulumi.ComponentResource {
             opts,
         );
     }
+
+    public static createPrefixStripper(
+        name: string,
+        namespace: pulumi.Input<string>,
+        labels: pulumi.Input<{ [key: string]: pulumi.Input<string> }>,
+        prefixes: string[],
+        provider?: k8s.Provider,
+        opts?: pulumi.ComponentResourceOptions,
+    ): TraefikMiddleware {
+        return new TraefikMiddleware(
+            name,
+            {
+                name,
+                namespace,
+                labels,
+                spec: {
+                    stripPrefix: {
+                        prefixes,
+                    },
+                },
+                provider: provider,
+            },
+            opts,
+        );
+    }
 }

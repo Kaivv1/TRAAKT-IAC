@@ -32,7 +32,7 @@ export const backendRateLimitMiddleware = TraefikMiddleware.createRateLimit(
 
 const middlewaresLiteral = pulumi.interpolate`${namespace}-${backendHttpsRedirectMiddleware.name}${crd},${namespace}-${backendCorsMiddleware.name}${crd},${namespace}-${backendRateLimitMiddleware.name}${crd}`;
 
-const backendCopiedTlsSecret = copyTlsSecretToNamespace("tls-cert-secret-dev", namespace, [backendNs]);
+// const backendCopiedTlsSecret = copyTlsSecretToNamespace("tls-cert-secret-dev", namespace, [backendNs]);
 
 export const backendIngress = new k8s.networking.v1.Ingress(
     "backend-ingress-dev",
@@ -77,7 +77,7 @@ export const backendIngress = new k8s.networking.v1.Ingress(
     {
         dependsOn: [
             backendNs,
-            backendCopiedTlsSecret,
+            // backendCopiedTlsSecret,
             backendHttpsRedirectMiddleware,
             backendCorsMiddleware,
             backendRateLimitMiddleware,
