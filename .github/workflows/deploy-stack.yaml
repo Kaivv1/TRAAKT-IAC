@@ -136,6 +136,7 @@ jobs:
         working-directory: ./infra/stacks/${{ github.event.inputs.stack }}
         if: github.event.inputs.stack != 'core' && github.event.inputs.action == 'delete'
         run: |
+          pulumi stack select ${{ github.event.inputs.stack }}
           pulumi destroy --yes
 
       - name: Save pulumi state
