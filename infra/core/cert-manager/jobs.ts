@@ -68,7 +68,7 @@ export const waitForCertManager = new k8s.batch.v1.Job(
                     containers: [
                         {
                             name: "wait",
-                            image: "bitnami/kubectl:1.31",
+                            image: "bitnami/kubectl",
                             command: [
                                 "sh",
                                 "-c",
