@@ -14,6 +14,5 @@ export const certManager = new k8s.helm.v3.Chart(
     },
     {
         dependsOn: certManagerNs,
-        protect: true,
     },
 );

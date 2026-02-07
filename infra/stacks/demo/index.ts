@@ -3,12 +3,12 @@ import {
     backendHttpsRedirectMiddleware,
     backendIngress,
     backendRateLimitMiddleware,
-} from "./ingress";
-import { backendDeployment } from "./deployment";
-import { backendNs } from "./namespace";
-import { backendService } from "./service";
+} from "./backend/ingress";
+import { backendDeployment } from "./backend/deployment";
+import { backendNs } from "./backend/namespace";
+import { backendService } from "./backend/service";
 
-const info = {
+export const deployed = {
     namespace: backendNs.metadata.name,
     svc: backendService.metadata.name,
     deployment: backendDeployment.metadata.name,
@@ -20,6 +20,4 @@ const info = {
     },
 };
 
-const urls = backendIngress.spec.rules.apply((rules) => rules.map((rule) => `https://${rule.host}/api`));
-
-export { info, urls };
+export const urls = backendIngress.spec.rules.apply((rules) => rules.map((rule) => `https://${rule.host}/api`));

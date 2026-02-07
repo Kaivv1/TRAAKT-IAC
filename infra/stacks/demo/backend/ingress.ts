@@ -1,65 +1,80 @@
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
-import * as config from "../../shared/config";
-import { backendNs } from "./namespace";
-import { letsEncrypt, letsEncryptTest, copyTlsSecretToNamespace } from "../../core/cert-manager";
-import { TraefikMiddleware } from "../../components/traefik.middleware";
+import { backendNs, labels } from "./namespace";
 import { backendService } from "./service";
+import { TraefikMiddleware } from "../../../components/traefik.middleware";
 
 const crd = "@kubernetescrd";
 const namespace = backendNs.metadata.name;
-const environment = config.vars.environment;
+
+// const coreStack = new pulumi.StackReference("core-infra/core");
+
+// const tlsSecretName = coreStack.requireOutput("tlsSecretName");
+// const tlsSecretNamespace = coreStack.requireOutput("tlsNamespace");
+
 export const backendHttpsRedirectMiddleware = TraefikMiddleware.createHttpsRedirect(
-    `backend-https-redirect-${environment}`,
+    "backend-https-redirect-demo",
     namespace,
-    config.labels.backend,
+    labels,
     { dependsOn: backendNs },
 );
 
 export const backendCorsMiddleware = TraefikMiddleware.createCors(
-    `backend-cors-${environment}`,
+    "backend-cors-demo",
     namespace,
-    config.labels.backend,
-    [`https://${environment}.traakt.com`],
+    labels,
+    ["https://demo.traakt.com"],
     { dependsOn: backendNs },
 );
 
 export const backendRateLimitMiddleware = TraefikMiddleware.createRateLimit(
-    `backend-rate-limit-${environment}`,
+    "backend-rate-limit-demo",
     namespace,
-    config.labels.backend,
+    labels,
     { dependsOn: backendNs },
 );
 
 const middlewaresLiteral = pulumi.interpolate`${namespace}-${backendHttpsRedirectMiddleware.name}${crd},${namespace}-${backendCorsMiddleware.name}${crd},${namespace}-${backendRateLimitMiddleware.name}${crd}`;
 
-const backendTlsSecret = copyTlsSecretToNamespace(`backend-tls-secret-${environment}`, namespace, [
-    backendNs,
-]) as pulumi.Input<pulumi.Resource>;
+const sourceSecret = k8s.core.v1.Secret.get(`backend-tls-secret-source-demo`, "cert-manager/tls-cert-secret", {
+    dependsOn: backendNs,
+});
 
-export const backendIngress = new k8s.networking.v1.Ingress(
-    `backend-ingress-${environment}`,
+const backendTlsSecret = new k8s.core.v1.Secret(
+    "backend-tls-secret-demo",
     {
         metadata: {
-            name: `backend-ingress-${environment}`,
+            name: "tls-cert-secret",
+            namespace: namespace,
+        },
+        type: "kubernetes.io/tls",
+        data: sourceSecret.data,
+    },
+    { dependsOn: [backendNs, sourceSecret] },
+);
+
+export const backendIngress = new k8s.networking.v1.Ingress(
+    "backend-ingress-demo",
+    {
+        metadata: {
+            name: "backend-ingress-demo",
             namespace,
-            labels: config.labels.backend,
+            labels,
             annotations: {
                 "kubernetes.io/ingress.class": "traefik",
-                // "cert-manager.io/cluster-issuer": config.issuer,
                 "traefik.ingress.kubernetes.io/router.middlewares": middlewaresLiteral,
             },
         },
         spec: {
             tls: [
                 {
-                    hosts: [`${environment}.traakt.com`],
+                    hosts: ["demo.traakt.com"],
                     secretName: "tls-cert-secret",
                 },
             ],
             rules: [
                 {
-                    host: `${environment}.traakt.com`,
+                    host: "demo.traakt.com",
                     http: {
                         paths: [
                             {
@@ -81,13 +96,10 @@ export const backendIngress = new k8s.networking.v1.Ingress(
     {
         dependsOn: [
             backendNs,
-            letsEncryptTest,
-            letsEncrypt,
             backendTlsSecret,
             backendHttpsRedirectMiddleware,
             backendCorsMiddleware,
             backendRateLimitMiddleware,
         ],
-        protect: true,
     },
 );

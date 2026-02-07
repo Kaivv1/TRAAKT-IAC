@@ -1,12 +1,6 @@
 {
-    "name": "infra",
+    "name": "@infra/core",
     "main": "index.ts",
-    "workspaces": [
-        "core",
-        "stacks/dev",
-        "stacks/demo",
-        "components"
-    ],
     "devDependencies": {
         "@types/node": "^18",
         "typescript": "^5.0.0"

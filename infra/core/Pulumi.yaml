@@ -1,6 +1,5 @@
-name: infra
-description: A minimal Kubernetes TypeScript Pulumi program
-organization: traakt
+name: core-infra
+description: Core infrastructure
 runtime:
   name: nodejs
   options:

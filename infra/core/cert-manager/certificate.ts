@@ -1,6 +1,6 @@
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
-import * as config from "../../shared/config";
+import * as vars from "../../shared/vars";
 import { certManagerNs } from "./cert-manager";
 import { waitForCertManager } from "./jobs";
 import { letsEncrypt, letsEncryptTest } from "./cluster-issuers";
@@ -17,15 +17,14 @@ export const certificate = new k8s.apiextensions.CustomResource(
         spec: {
             secretName: "tls-cert-secret",
             issuerRef: {
-                name: config.issuer,
+                name: vars.issuer,
                 kind: "ClusterIssuer",
             },
-            dnsNames: config.vars.domains,
+            dnsNames: vars.domains,
         },
     },
     {
         dependsOn: [waitForCertManager, letsEncrypt, letsEncryptTest],
-        protect: true,
     },
 );
 
@@ -34,17 +33,9 @@ export function copyTlsSecretToNamespace(
     targetNamespace: pulumi.Input<string>,
     dependsOn?: pulumi.Input<pulumi.Resource>[],
 ): k8s.core.v1.Secret | undefined {
-    const skipSecretCopy = process.env.PULUMI_SKIP_SECRET_COPY === "true";
-
-    if (skipSecretCopy) {
-        console.log(`Skipping secret copy for ${resourceName}`);
-        return undefined;
-    }
-
     const sourceSecret = k8s.core.v1.Secret.get(
         `${resourceName}-source`,
         pulumi.interpolate`cert-manager/tls-cert-secret`,
-        { dependsOn: certificate },
     );
 
     return new k8s.core.v1.Secret(
@@ -59,7 +50,6 @@ export function copyTlsSecretToNamespace(
         },
         {
             dependsOn: [certificate, ...(dependsOn || [])],
-            protect: true,
         },
     );
 }

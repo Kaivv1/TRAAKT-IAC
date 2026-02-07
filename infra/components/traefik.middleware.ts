@@ -1,6 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
-import * as config from "../shared/config";
 
 export interface TraefikMiddlewareArgs {
     name: string;
@@ -30,7 +29,7 @@ export class TraefikMiddleware extends pulumi.ComponentResource {
                 },
                 spec: args.spec,
             },
-            { parent: this, provider: args.provider, protect: true },
+            { parent: this, provider: args.provider },
         );
 
         this.name = this.middleware.metadata.name;

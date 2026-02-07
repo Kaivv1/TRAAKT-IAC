@@ -1,24 +1,23 @@
 import * as k8s from "@pulumi/kubernetes";
-import * as config from "../../shared/config";
-import { backendNs } from "./namespace";
+import { backendNs, labels } from "./namespace";
 
 export const backendDeployment = new k8s.apps.v1.Deployment(
-    `backend-${config.vars.environment}`,
+    "backend-demo",
     {
         metadata: {
-            name: `backend-${config.vars.environment}`,
+            name: "backend-demo",
             namespace: backendNs.metadata.name,
-            labels: config.labels.backend,
+            labels,
         },
         spec: {
-            selector: { matchLabels: config.labels.backend },
+            selector: { matchLabels: labels },
             replicas: 2,
             template: {
-                metadata: { labels: config.labels.backend },
+                metadata: { labels },
                 spec: {
                     containers: [
                         {
-                            name: `api-container-${config.vars.environment}`,
+                            name: "api-container-demo",
                             image: "kaivv1/json-hello",
                             ports: [{ containerPort: 8080 }],
                         },
@@ -27,5 +26,5 @@ export const backendDeployment = new k8s.apps.v1.Deployment(
             },
         },
     },
-    { dependsOn: [backendNs], protect: true },
+    { dependsOn: [backendNs] },
 );

@@ -16,7 +16,7 @@ export const letsEncryptTest = new k8s.apiextensions.CustomResource(
             },
         },
     },
-    { dependsOn: waitForCertManager, protect: true },
+    { dependsOn: waitForCertManager },
 );
 
 export const letsEncrypt = new k8s.apiextensions.CustomResource(
@@ -34,5 +34,5 @@ export const letsEncrypt = new k8s.apiextensions.CustomResource(
             },
         },
     },
-    { dependsOn: waitForCertManager, protect: true },
+    { dependsOn: waitForCertManager },
 );

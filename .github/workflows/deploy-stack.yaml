@@ -88,18 +88,39 @@ jobs:
       - name: Pulumi login
         run: pulumi login --local
 
-      - name: Choose stack
-        working-directory: ./infra
+      - name: Deploy Core Stack
+        working-directory: ./infra/core
         run: |
-          pulumi stack select stage || \
-          pulumi stack select stage --create
+          pulumi stack select core || \
+          pulumi stack select core --create
+          pulumi up --yes --skip-preview
+          echo ""
+          echo "Waiting for cert-manager to be available..."
+          kubectl wait --for=condition=Available deployment/cert-manager -n cert-manager --timeout=5m
+          kubectl wait --for=condition=Available deployment/cert-manager-webhook -n cert-manager --timeout=5m
+          kubectl wait --for=condition=Available deployment/cert-manager-cainjector -n cert-manager --timeout=5m
 
-      - name: Deploy stack
-        working-directory: ./infra
-        if: ${{ github.event.inputs.action == 'deploy' }}
-        run: |
-          chmod +x ../scripts/deploy-infra.sh
-          ../scripts/deploy-infra.sh ${{ github.event.inputs.environment }}
+          echo ""
+          echo "Give 40s for the webhook..."
+          sleep 40
+
+          echo ""
+          echo "Waiting for certificate to be ready..."
+          kubectl wait --for=condition=Ready certificate/tls-cert -n cert-manager --timeout=6m || {
+              echo "❌ Certificate failed"
+              kubectl describe certificate tls-cert -n cert-manager
+              kubectl get certificaterequest -n cert-manager
+              kubectl get challenges -n cert-manager
+              kubectl describe challenge -n cert-manager 2>/dev/null || true
+              exit 1
+          }
+          echo "✅ Certificate ready!"
+      # - name: Deploy stack
+      #   working-directory: ./infra
+      #   if: ${{ github.event.inputs.action == 'deploy' }}
+      #   run: |
+      #     chmod +x ../scripts/deploy-infra.sh
+      #     ../scripts/deploy-infra.sh ${{ github.event.inputs.environment }}
 
       # - name: Save pulumi state
       #   if: ${{ github.event.inputs.action == 'deploy' }}
@@ -109,8 +130,8 @@ jobs:
       #     path: ~/.pulumi/stacks
       #     retention-days: 400
 
-      - name: Remove stack
-        working-directory: ./infra
+      - name: Remove Core Stack
+        working-directory: ./infra/core
         if: ${{ github.event.inputs.action == 'delete' }}
         run: |
           pulumi destroy --yes
