@@ -90,7 +90,7 @@ jobs:
         run: pulumi login --local
 
       - name: Deploy Core Stack
-        if: ${{ github.event.inputs.stack == 'core' }} && ${{ github.event.inputs.action == 'deploy' }}
+        if: github.event.inputs.stack == 'core' && github.event.inputs.action == 'deploy'
         working-directory: ./infra/core
         run: |
           pulumi stack select core || \
@@ -120,7 +120,7 @@ jobs:
 
       - name: Deploy Environment Stack
         working-directory: ./infra/stacks/${{ github.event.inputs.stack }}
-        if: ${{ github.event.inputs.action == 'deploy' }} && ${{ github.event.inputs.stack != 'core' }}
+        if: github.event.inputs.action == 'deploy' && github.event.inputs.stack != 'core'
         run: |
           pulumi stack select ${{ github.event.inputs.stack }} || \
           pulumi stack select ${{ github.event.inputs.stack }} --create
@@ -128,13 +128,13 @@ jobs:
 
       - name: Remove Core Stack
         working-directory: ./infra/core
-        if: ${{ github.event.inputs.stack == 'core' }} && ${{ github.event.inputs.action == 'delete' }}
+        if: github.event.inputs.stack == 'core' && github.event.inputs.action == 'delete'
         run: |
           pulumi destroy --yes
 
       - name: Remove Environment Stack
         working-directory: ./infra/stacks/${{ github.event.inputs.stack }}
-        if: ${{ github.event.inputs.stack != 'core' }} && ${{ github.event.inputs.action == 'delete' }}
+        if: github.event.inputs.stack != 'core' && github.event.inputs.action == 'delete'
         run: |
           pulumi destroy --yes
 
