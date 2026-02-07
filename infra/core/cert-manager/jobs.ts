@@ -6,13 +6,14 @@ export const waitForCertManager = new k8s.batch.v1.Job(
     {
         metadata: { name: "wait-cert-manager", namespace: "cert-manager" },
         spec: {
+            backoffLimit: 10,
             template: {
                 spec: {
                     containers: [
                         {
                             name: "wait",
-                            image: "busybox:latest",
-                            command: ["sh", "-c", "sleep 60"],
+                            image: "quay.io/jetstack/cert-manager-ctl:v1.13.3",
+                            command: ["cmctl", "check", "api", "--wait=6m"],
                         },
                     ],
                     restartPolicy: "Never",

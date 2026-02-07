@@ -3,7 +3,6 @@ import * as pulumi from "@pulumi/pulumi";
 import { backendNs, labels } from "./namespace";
 import { backendService } from "./service";
 import { TraefikMiddleware } from "../../../components/traefik.middleware";
-import { copyTlsSecretToNamespace } from "../../../components/copyTlsSecret";
 
 const crd = "@kubernetescrd";
 const namespace = backendNs.metadata.name;
@@ -31,8 +30,6 @@ export const backendRateLimitMiddleware = TraefikMiddleware.createRateLimit(
 );
 
 const middlewaresLiteral = pulumi.interpolate`${namespace}-${backendHttpsRedirectMiddleware.name}${crd},${namespace}-${backendCorsMiddleware.name}${crd},${namespace}-${backendRateLimitMiddleware.name}${crd}`;
-
-// const backendCopiedTlsSecret = copyTlsSecretToNamespace("tls-cert-secret-dev", namespace, [backendNs]);
 
 export const backendIngress = new k8s.networking.v1.Ingress(
     "backend-ingress-dev",

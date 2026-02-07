@@ -1,9 +1,9 @@
 import * as k8s from "@pulumi/kubernetes";
-import * as pulumi from "@pulumi/pulumi";
 import * as vars from "../../shared/vars";
 import { certManagerNs } from "./cert-manager";
 import { waitForCertManager } from "./jobs";
 import { letsEncrypt, letsEncryptTest } from "./cluster-issuers";
+import { reflector } from "./reflector";
 
 export const certificate = new k8s.apiextensions.CustomResource(
     "tls-cert",
@@ -21,35 +21,19 @@ export const certificate = new k8s.apiextensions.CustomResource(
                 kind: "ClusterIssuer",
             },
             dnsNames: vars.domains,
+            secretTemplate: {
+                annotations: {
+                    "reflector.v1.k8s.emberstack.com/reflection-allowed": "true",
+                    "reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces":
+                        "backend-service-dev,backend-service-demo",
+                    "reflector.v1.k8s.emberstack.com/reflection-auto-enabled": "true",
+                    "reflector.v1.k8s.emberstack.com/reflection-auto-namespaces":
+                        "backend-service-dev,backend-service-demo",
+                },
+            },
         },
     },
     {
-        dependsOn: [waitForCertManager, letsEncrypt, letsEncryptTest],
+        dependsOn: [reflector, waitForCertManager, letsEncrypt, letsEncryptTest],
     },
 );
-
-export function copyTlsSecretToNamespace(
-    resourceName: string,
-    targetNamespace: pulumi.Input<string>,
-    dependsOn?: pulumi.Input<pulumi.Resource>[],
-): k8s.core.v1.Secret | undefined {
-    const sourceSecret = k8s.core.v1.Secret.get(
-        `${resourceName}-source`,
-        pulumi.interpolate`cert-manager/tls-cert-secret`,
-    );
-
-    return new k8s.core.v1.Secret(
-        resourceName,
-        {
-            metadata: {
-                name: "tls-cert-secret",
-                namespace: targetNamespace,
-            },
-            type: "kubernetes.io/tls",
-            data: sourceSecret.data,
-        },
-        {
-            dependsOn: [certificate, ...(dependsOn || [])],
-        },
-    );
-}
