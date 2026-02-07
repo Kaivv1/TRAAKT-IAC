@@ -12,7 +12,7 @@ export const waitForCertManager = new k8s.batch.v1.Job(
                     containers: [
                         {
                             name: "wait",
-                            image: "quay.io/jetstack/cert-manager-ctl:v1.13.3",
+                            image: "quay.io/jetstack/cert-manager-cmctl:v1.16.2",
                             command: ["cmctl", "check", "api", "--wait=6m"],
                         },
                     ],
