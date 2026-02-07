@@ -86,15 +86,6 @@ jobs:
           pulumi stack select core || \
           pulumi stack select core --create
           pulumi up --yes --skip-preview
-          echo ""
-          echo "Waiting for cert-manager to be available..."
-          kubectl wait --for=condition=Available deployment/cert-manager -n cert-manager --timeout=5m
-          kubectl wait --for=condition=Available deployment/cert-manager-webhook -n cert-manager --timeout=5m
-          kubectl wait --for=condition=Available deployment/cert-manager-cainjector -n cert-manager --timeout=5m
-
-          echo ""
-          echo "Give 40s for the webhook..."
-          sleep 40
 
           echo ""
           echo "Waiting for certificate to be ready..."
