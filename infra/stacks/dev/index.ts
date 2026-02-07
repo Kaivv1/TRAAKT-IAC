@@ -1,14 +1,23 @@
-import * as k8s from "@pulumi/kubernetes";
+import {
+    backendCorsMiddleware,
+    backendHttpsRedirectMiddleware,
+    backendIngress,
+    backendRateLimitMiddleware,
+} from "./backend/ingress";
+import { backendDeployment } from "./backend/deployment";
+import { backendNs } from "./backend/namespace";
+import { backendService } from "./backend/service";
 
-const appLabels = { app: "nginx" };
-const deployment = new k8s.apps.v1.Deployment("nginx", {
-    spec: {
-        selector: { matchLabels: appLabels },
-        replicas: 1,
-        template: {
-            metadata: { labels: appLabels },
-            spec: { containers: [{ name: "nginx", image: "nginx" }] }
-        }
-    }
-});
-export const name = deployment.metadata.name;
+export const deployed = {
+    namespace: backendNs.metadata.name,
+    svc: backendService.metadata.name,
+    deployment: backendDeployment.metadata.name,
+    ingress: backendIngress.metadata.name,
+    middlewares: {
+        cors: backendCorsMiddleware.name,
+        httpsRedirect: backendHttpsRedirectMiddleware.name,
+        rateLimit: backendRateLimitMiddleware.name,
+    },
+};
+
+export const urls = backendIngress.spec.rules.apply((rules) => rules.map((rule) => `https://${rule.host}/api`));

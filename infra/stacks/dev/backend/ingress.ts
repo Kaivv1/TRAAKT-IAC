@@ -8,28 +8,23 @@ import { copyTlsSecretToNamespace } from "../../../components/copyTlsSecret";
 const crd = "@kubernetescrd";
 const namespace = backendNs.metadata.name;
 
-// const coreStack = new pulumi.StackReference("core-infra/core");
-
-// const tlsSecretName = coreStack.requireOutput("tlsSecretName");
-// const tlsSecretNamespace = coreStack.requireOutput("tlsNamespace");
-
 export const backendHttpsRedirectMiddleware = TraefikMiddleware.createHttpsRedirect(
-    "backend-https-redirect-demo",
+    "backend-https-redirect-dev",
     namespace,
     labels,
     { dependsOn: backendNs },
 );
 
 export const backendCorsMiddleware = TraefikMiddleware.createCors(
-    "backend-cors-demo",
+    "backend-cors-dev",
     namespace,
     labels,
-    ["https://demo.traakt.com"],
+    ["https://dev.traakt.com"],
     { dependsOn: backendNs },
 );
 
 export const backendRateLimitMiddleware = TraefikMiddleware.createRateLimit(
-    "backend-rate-limit-demo",
+    "backend-rate-limit-dev",
     namespace,
     labels,
     { dependsOn: backendNs },
@@ -37,13 +32,13 @@ export const backendRateLimitMiddleware = TraefikMiddleware.createRateLimit(
 
 const middlewaresLiteral = pulumi.interpolate`${namespace}-${backendHttpsRedirectMiddleware.name}${crd},${namespace}-${backendCorsMiddleware.name}${crd},${namespace}-${backendRateLimitMiddleware.name}${crd}`;
 
-const backendCopiedTlsSecret = copyTlsSecretToNamespace("tls-cert-secret-demo", namespace, [backendNs]);
+const backendCopiedTlsSecret = copyTlsSecretToNamespace("tls-cert-secret-dev", namespace, [backendNs]);
 
 export const backendIngress = new k8s.networking.v1.Ingress(
-    "backend-ingress-demo",
+    "backend-ingress-dev",
     {
         metadata: {
-            name: "backend-ingress-demo",
+            name: "backend-ingress-dev",
             namespace,
             labels,
             annotations: {
@@ -54,13 +49,13 @@ export const backendIngress = new k8s.networking.v1.Ingress(
         spec: {
             tls: [
                 {
-                    hosts: ["demo.traakt.com"],
+                    hosts: ["dev.traakt.com"],
                     secretName: "tls-cert-secret",
                 },
             ],
             rules: [
                 {
-                    host: "demo.traakt.com",
+                    host: "dev.traakt.com",
                     http: {
                         paths: [
                             {
