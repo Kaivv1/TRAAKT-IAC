@@ -1,5 +1,5 @@
-name: core-infra
-description: Core infrastructure
+name: infra
+description: Infrastructure deployment
 runtime:
   name: nodejs
   options:

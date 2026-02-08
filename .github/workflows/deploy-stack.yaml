@@ -13,14 +13,14 @@ on:
         type: string
         default: ""
         required: true
-      stack:
-        type: choice
-        required: true
-        description: Select a stack
-        options:
-          - core
-          - dev
-          - demo
+      deploy_dev_services:
+        description: Deploy dev services
+        type: boolean
+        default: false
+      deploy_demo_services:
+        description: Deploy demo services
+        type: boolean
+        default: false
       action:
         description: Action
         required: true
@@ -79,47 +79,23 @@ jobs:
       - name: Pulumi login
         run: pulumi login --local
 
-      - name: Deploy Core Stack
-        if: github.event.inputs.stack == 'core' && github.event.inputs.action == 'deploy'
-        working-directory: ./infra/core
+      - name: Deploy
+        if: ${{ github.event.inputs.action == 'deploy' }}
+        working-directory: ./infra
         run: |
-          pulumi stack select core || \
-          pulumi stack select core --create
+          pulumi stack select infra || \
+          pulumi stack select infra --create
+
+          pulumi config set --path 'service-environment.dev.enabled' ${{ github.event.inputs.deploy_dev_services }}
+          pulumi config set --path 'service-environment.demo.enabled' ${{ github.event.inputs.deploy_demo_services }}
+
           pulumi up --yes --skip-preview
 
-          echo ""
-          echo "Waiting for certificate to be ready..."
-          kubectl wait --for=condition=Ready certificate/tls-cert -n cert-manager --timeout=6m || {
-              echo "❌ Certificate failed"
-              kubectl describe certificate tls-cert -n cert-manager
-              kubectl get certificaterequest -n cert-manager
-              kubectl get challenges -n cert-manager
-              kubectl describe challenge -n cert-manager 2>/dev/null || true
-              exit 1
-          }
-          echo "✅ Certificate ready!"
-
-      - name: Deploy Environment Stack
-        working-directory: ./infra/stacks/${{ github.event.inputs.stack }}
-        if: github.event.inputs.action == 'deploy' && github.event.inputs.stack != 'core'
+      - name: Destroy
+        if: ${{ github.event.inputs.action == 'delete' }}
+        working-directory: ./infra
         run: |
-          pulumi stack select ${{ github.event.inputs.stack }} || \
-          pulumi stack select ${{ github.event.inputs.stack }} --create
-          pulumi up --yes --skip-preview
-
-      - name: Remove Core Stack
-        working-directory: ./infra/core
-        if: github.event.inputs.stack == 'core' && github.event.inputs.action == 'delete'
-        run: |
-          pulumi stack select core
-          pulumi destroy --yes
-
-      - name: Remove Environment Stack
-        working-directory: ./infra/stacks/${{ github.event.inputs.stack }}
-        if: github.event.inputs.stack != 'core' && github.event.inputs.action == 'delete'
-        run: |
-          pulumi stack select ${{ github.event.inputs.stack }}
-          pulumi destroy --yes
+          pulumi destroy -s infra --yes --skip-preview
 
       - name: Save pulumi state
         run: |

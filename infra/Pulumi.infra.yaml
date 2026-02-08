@@ -1,0 +1,6 @@
+config:
+  service-environment:
+    dev:
+      enabled: false
+    demo:
+      enabled: false

@@ -1,17 +1,12 @@
 {
     "name": "infra",
     "main": "index.ts",
-    "workspaces": [
-        "core",
-        "stacks/dev",
-        "stacks/demo",
-        "components"
-    ],
     "devDependencies": {
         "@types/node": "^18",
         "typescript": "^5.0.0"
     },
     "dependencies": {
+        "@pulumi/command": "^1.1.3",
         "@pulumi/kubernetes": "^4.0.0",
         "@pulumi/pulumi": "^3.113.0"
     }
