@@ -22,6 +22,7 @@ export const certManager = new k8s.helm.v3.Release(
                 replicaCount: 2,
                 networkPolicy: {
                     enabled: true,
+                },
                 readinessProbe: {
                     initialDelaySeconds: 10,
                     periodSeconds: 5,
