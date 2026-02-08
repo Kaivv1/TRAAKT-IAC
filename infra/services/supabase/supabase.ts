@@ -43,6 +43,10 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                 },
                 kong: {
                     enabled: true,
+                    nameOverride: "kong",
+                    ingress: {
+                        enabled: false,
+                    },
                 },
                 auth: {
                     enabled: true,
