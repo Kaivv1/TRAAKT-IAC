@@ -61,6 +61,12 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                 },
                 rest: { enabled: true },
                 realtime: { enabled: true },
+                functions: {
+                    enabled: true,
+                    // environment: {
+                    //     VERIFY_JWT: "true",
+                    // },
+                },
                 storage: {
                     enabled: true,
                     persistence: {
