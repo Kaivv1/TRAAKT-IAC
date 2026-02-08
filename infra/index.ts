@@ -22,5 +22,5 @@ const certificateCheck = new command.local.Command(
 for (const [env, conf] of Object.entries(config.serviceEnvironemnts)) {
     const enabled = conf.enabled === true || conf.enabled === "true";
     if (!enabled) continue;
-    deployBackendService(env, [certificateCheck]);
+    deployBackendService(env, [certificate, certificateCheck]);
 }
