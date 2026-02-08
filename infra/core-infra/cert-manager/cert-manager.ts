@@ -8,12 +8,15 @@ export const createCertManagerNs = () => {
 };
 
 export const createCertManagerChart = (dependsOn: pulumi.Resource[]) => {
-    return new k8s.helm.v3.Chart(
+    return new k8s.helm.v3.Release(
         "cert-manager",
         {
+            name: "cert-manager",
             chart: "cert-manager",
             namespace: "cert-manager",
-            fetchOpts: { repo: "https://charts.jetstack.io" },
+            repositoryOpts: { repo: "https://charts.jetstack.io" },
+            waitForJobs: true,
+            timeout: 400,
             values: {
                 crds: {
                     enabled: true,
