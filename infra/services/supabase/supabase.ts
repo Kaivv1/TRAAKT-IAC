@@ -43,15 +43,10 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                 },
                 kong: {
                     enabled: true,
-                    environment: {
-                        SUPABASE_ANON_KEY: config.secrets.supabaseAnonKey,
-                        SUPABASE_SERVICE_KEY: config.secrets.supabaseServiceRoleKey,
-                    },
                 },
                 auth: {
                     enabled: true,
                     environment: {
-                        GOTRUE_JWT_SECRET: config.secrets.supabaseJwtSecret,
                         GOTRUE_SITE_URL: "https://traakt.com",
                         GOTRUE_URI_ALLOW_LIST: "https://*.traakt.com/*,https://traakt.com/*",
                         GOTRUE_API_EXTERNAL_URL: "https://supabase.traakt.com",
