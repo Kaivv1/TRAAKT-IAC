@@ -1,5 +1,6 @@
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
+import * as config from "../../shared/config";
 
 export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn: pulumi.Resource[]) => {
     return new k8s.helm.v3.Chart(
@@ -12,13 +13,18 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
             },
             values: {
                 secret: {
+                    jwt: {
+                        secret: config.secrets.supabaseJwtSecret,
+                        anonKey: config.secrets.supabaseAnonKey,
+                        serviceKey: config.secrets.supabaseServiceRoleKey,
+                    },
                     db: {
-                        password: "",
-                        database: "postgres",
+                        password: config.secrets.supabaseDbPassword,
+                        database: config.secrets.supabaseDbName,
                     },
                     dashboard: {
-                        username: "admin",
-                        password: "1234",
+                        username: config.secrets.supabaseStudioUsername,
+                        password: config.secrets.supabaseStudioPassword,
                     },
                 },
                 db: {
@@ -38,14 +44,14 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                 kong: {
                     enabled: true,
                     environment: {
-                        SUPABASE_ANON_KEY: "",
-                        SUPABASE_SERVICE_KEY: "",
+                        SUPABASE_ANON_KEY: config.secrets.supabaseAnonKey,
+                        SUPABASE_SERVICE_KEY: config.secrets.supabaseServiceRoleKey,
                     },
                 },
                 auth: {
                     enabled: true,
                     environment: {
-                        GOTRUE_JWT_SECRET: "",
+                        GOTRUE_JWT_SECRET: config.secrets.supabaseJwtSecret,
                         GOTRUE_SITE_URL: "https://traakt.com",
                         GOTRUE_URI_ALLOW_LIST: "https://*.traakt.com/*,https://traakt.com/*",
                         GOTRUE_API_EXTERNAL_URL: "https://supabase.traakt.com",

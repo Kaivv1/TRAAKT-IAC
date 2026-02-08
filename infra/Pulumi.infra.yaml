@@ -1,4 +1,6 @@
 config:
+  supabase:
+    enabled: false
   service-environment:
     dev:
       enabled: false

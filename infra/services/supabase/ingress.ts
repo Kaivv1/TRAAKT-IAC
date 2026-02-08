@@ -56,7 +56,7 @@ export const createSupabaseIngress = (namespace: pulumi.Output<string>, dependsO
             },
         },
         {
-            dependsOn,
+            dependsOn: [supabaseHttpsRedirectMiddleware, ...dependsOn],
         },
     );
 };
