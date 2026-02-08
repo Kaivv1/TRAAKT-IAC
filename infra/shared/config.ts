@@ -2,12 +2,9 @@ import * as pulumi from "@pulumi/pulumi";
 
 const config = new pulumi.Config();
 
-export const serviceEnvironemnts =
-    config.requireObject<Record<string, { enabled: boolean | string }>>("service-environment");
-export const supabase = config.requireObject<Record<string, { enabled: boolean | string }>>("supabase");
-console.log("------supabase env variable------");
-console.log(supabase);
-console.log("------supabase env variable------");
+export const serviceEnvironemnts = config.requireObject<Record<string, { enabled: boolean }>>("service-environment");
+export const supabase = config.requireObject<{ enabled: boolean }>("supabase");
+
 export const secrets = {
     supabaseJwtSecret: config.requireSecret("supabase_jwt_secret"),
     supabaseAnonKey: config.requireSecret("supabase_anon_key"),
