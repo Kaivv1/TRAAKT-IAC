@@ -3,12 +3,15 @@ import * as pulumi from "@pulumi/pulumi";
 import * as config from "../../shared/config";
 
 export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn: pulumi.Resource[]) => {
-    return new k8s.helm.v3.Chart(
+    return new k8s.helm.v3.Release(
         "supabase",
         {
+            name: "supabase",
             chart: "supabase",
             namespace,
-            fetchOpts: {
+            waitForJobs: true,
+            timeout: 600,
+            repositoryOpts: {
                 repo: "https://supabase-community.github.io/supabase-kubernetes",
             },
             values: {
