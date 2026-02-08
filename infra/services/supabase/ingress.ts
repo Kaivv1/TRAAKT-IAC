@@ -1,64 +1,62 @@
-// import * as k8s from "@pulumi/kubernetes";
-// import * as pulumi from "@pulumi/pulumi";
-// import { supabaseNs, labels } from "./namespace";
-// import { TraefikMiddleware } from "../../../components/traefik.middleware";
-// import { copyTlsSecretToNamespace } from "../../../components/copyTlsSecret";
+import * as k8s from "@pulumi/kubernetes";
+import * as pulumi from "@pulumi/pulumi";
+import { TraefikMiddleware } from "../../components/traefik.middleware";
 
-// const crd = "@kubernetescrd";
-// const namespace = supabaseNs.metadata.name;
+export const createSupabaseIngress = (namespace: pulumi.Output<string>, dependsOn: pulumi.Resource[]) => {
+    const crd = "@kubernetescrd";
+    const labels = { app: "supabase" };
 
-// export const supabaseHttpsRedirectMiddleware = TraefikMiddleware.createHttpsRedirect(
-//     "supabase-https-redirect-dev",
-//     namespace,
-//     labels,
-//     { dependsOn: supabaseNs },
-// );
+    const supabaseHttpsRedirectMiddleware = TraefikMiddleware.createHttpsRedirect(
+        "supabase-https-redirect",
+        namespace,
+        labels,
+        { dependsOn },
+    );
 
-// const middlewaresLiteral = pulumi.interpolate`${namespace}-${supabaseHttpsRedirectMiddleware.name}${crd}`;
+    const middlewaresLiteral = pulumi.interpolate`${namespace}-${supabaseHttpsRedirectMiddleware.name}${crd}`;
 
-// const backendCopiedTlsSecret = copyTlsSecretToNamespace("tls-cert-secret-dev", namespace, [supabaseNs]);
-
-// export const supabaseIngress = new k8s.networking.v1.Ingress(
-//     "supabase-ingress-dev",
-//     {
-//         metadata: {
-//             name: "supabase-ingress-dev",
-//             namespace: supabaseNs.metadata.name,
-//             labels,
-//             annotations: {
-//                 "kubernetes.io/ingress.class": "traefik",
-//                 "traefik.ingress.kubernetes.io/router.middlewares": middlewaresLiteral,
-//             },
-//         },
-//         spec: {
-//             tls: [
-//                 {
-//                     hosts: ["dev.traakt.com"],
-//                     secretName: "tls-cert-secret",
-//                 },
-//             ],
-//             rules: [
-//                 {
-//                     host: "dev.traakt.com",
-//                     http: {
-//                         paths: [
-//                             {
-//                                 path: "/api",
-//                                 pathType: "Prefix",
-//                                 backend: {
-//                                     service: {
-//                                         name: backendService.metadata.name,
-//                                         port: { number: 80 },
-//                                     },
-//                                 },
-//                             },
-//                         ],
-//                     },
-//                 },
-//             ],
-//         },
-//     },
-//     {
-//         dependsOn: [backendNs],
-//     },
-// );
+    return new k8s.networking.v1.Ingress(
+        "supabase-ingress",
+        {
+            metadata: {
+                name: "supabase-ingress",
+                namespace,
+                labels,
+                annotations: {
+                    "kubernetes.io/ingress.class": "traefik",
+                    "traefik.ingress.kubernetes.io/router.middlewares": middlewaresLiteral,
+                },
+            },
+            spec: {
+                tls: [
+                    {
+                        hosts: ["supabase.traakt.com"],
+                        secretName: "tls-cert-secret",
+                    },
+                ],
+                rules: [
+                    {
+                        host: "supabase.traakt.com",
+                        http: {
+                            paths: [
+                                {
+                                    path: "/",
+                                    pathType: "Prefix",
+                                    backend: {
+                                        service: {
+                                            name: "supabase-kong",
+                                            port: { number: 8000 },
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            dependsOn,
+        },
+    );
+};

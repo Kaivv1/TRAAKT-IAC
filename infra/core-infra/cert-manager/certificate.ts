@@ -23,10 +23,10 @@ export const createCertificate = (namespace: pulumi.Output<string>, dependsOn: p
                     annotations: {
                         "reflector.v1.k8s.emberstack.com/reflection-allowed": "true",
                         "reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces":
-                            "backend-service-dev,backend-service-demo",
+                            "backend-service-dev,backend-service-demo,supabase-service",
                         "reflector.v1.k8s.emberstack.com/reflection-auto-enabled": "true",
                         "reflector.v1.k8s.emberstack.com/reflection-auto-namespaces":
-                            "backend-service-dev,backend-service-demo",
+                            "backend-service-dev,backend-service-demo,supabase-service",
                     },
                 },
             },
