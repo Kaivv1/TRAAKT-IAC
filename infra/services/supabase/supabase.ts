@@ -37,7 +37,7 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                 studio: {
                     enabled: true,
                     environment: {
-                        SUPABASE_URL: "https://supabase.traakt.com",
+                        // SUPABASE_URL: "https://supabase.traakt.com",
                         SUPABASE_PUBLIC_URL: "https://supabase.traakt.com",
                     },
                 },
