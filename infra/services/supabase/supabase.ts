@@ -9,7 +9,7 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
             chart: "supabase",
             namespace,
             fetchOpts: {
-                repo: "https://supabase.github.io/supabase-kubernetes",
+                repo: "https://supabase-community.github.io/supabase-kubernetes",
             },
             values: {
                 secret: {
