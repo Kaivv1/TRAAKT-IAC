@@ -1,7 +1,6 @@
 import * as k8s from "@pulumi/kubernetes";
 import * as vars from "../../shared/vars";
 import { certManagerNs } from "./cert-manager";
-import { waitForCertManager } from "./jobs";
 import { letsEncrypt, letsEncryptTest } from "./cluster-issuers";
 import { reflector } from "./reflector";
 
@@ -34,6 +33,6 @@ export const certificate = new k8s.apiextensions.CustomResource(
         },
     },
     {
-        dependsOn: [reflector, waitForCertManager, letsEncrypt, letsEncryptTest],
+        dependsOn: [reflector, letsEncrypt, letsEncryptTest],
     },
 );

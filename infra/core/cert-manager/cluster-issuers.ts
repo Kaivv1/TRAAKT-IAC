@@ -1,5 +1,5 @@
 import * as k8s from "@pulumi/kubernetes";
-import { waitForCertManager } from "./jobs";
+import { certManager } from "./cert-manager";
 
 export const letsEncryptTest = new k8s.apiextensions.CustomResource(
     "letsencrypt-test",
@@ -16,7 +16,7 @@ export const letsEncryptTest = new k8s.apiextensions.CustomResource(
             },
         },
     },
-    { dependsOn: waitForCertManager },
+    { dependsOn: certManager },
 );
 
 export const letsEncrypt = new k8s.apiextensions.CustomResource(
@@ -34,5 +34,5 @@ export const letsEncrypt = new k8s.apiextensions.CustomResource(
             },
         },
     },
-    { dependsOn: waitForCertManager },
+    { dependsOn: certManager },
 );

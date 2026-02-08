@@ -6,8 +6,8 @@ import { reflector } from "./cert-manager/reflector";
 
 export const deployed = {
     namespace: certManagerNs.metadata.name,
-    certManager: certManager.ready,
-    reflector: reflector.ready,
+    certManager: "chart deployed",
+    reflector: "chart deployed",
     clusterIssuers: {
         letsEncrypt: letsEncrypt.metadata.name,
         letsEncryptTest: letsEncryptTest.metadata.name,
