@@ -40,7 +40,6 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                 studio: {
                     enabled: true,
                     environment: {
-                        // SUPABASE_URL: "https://supabase.traakt.com",
                         SUPABASE_PUBLIC_URL: "https://supabase.traakt.com",
                     },
                 },
@@ -63,6 +62,11 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                 realtime: { enabled: true },
                 functions: {
                     enabled: true,
+                    image: {
+                        repository: "kaivv1/supabase-functions",
+                        pullPolicy: "Always",
+                        tag: "latest",
+                    },
                     // environment: {
                     //     VERIFY_JWT: "true",
                     // },
