@@ -71,6 +71,11 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                         pullPolicy: "Always",
                         tag: "latest",
                     },
+                    environment: {
+                        // SSL mode options: disable, allow, prefer, require, verify-ca, verify-full
+                        DB_SSL: "verify-full",
+                        VERIFY_JWT: true,
+                    },
                 },
                 storage: {
                     nameOverride: "storage",
