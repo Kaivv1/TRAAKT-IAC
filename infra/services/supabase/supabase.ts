@@ -66,6 +66,13 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                     enabled: true,
                     nameOverride: "functions",
                     replicaCount: 2,
+                    autoscaling: {
+                        enabled: true,
+                        minReplicas: 2,
+                        maxReplicas: 3,
+                        targetCPUUtilizationPercentage: 80,
+                    },
+
                     image: {
                         repository: "kaivv1/supabase-functions",
                         pullPolicy: "Always",
