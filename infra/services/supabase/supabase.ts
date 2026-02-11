@@ -39,6 +39,7 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                 },
                 studio: {
                     enabled: true,
+                    nameOverride: "studio",
                     environment: {
                         SUPABASE_PUBLIC_URL: "https://supabase.traakt.com",
                     },
@@ -52,28 +53,34 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                 },
                 auth: {
                     enabled: true,
+                    nameOverride: "auth",
                     environment: {
                         GOTRUE_SITE_URL: "https://traakt.com",
                         GOTRUE_URI_ALLOW_LIST: "https://*.traakt.com/*,https://traakt.com/*",
                         GOTRUE_API_EXTERNAL_URL: "https://supabase.traakt.com",
                     },
                 },
-                rest: { enabled: true },
-                realtime: { enabled: true },
+                rest: { enabled: true, nameOverride: "rest" },
+                realtime: { enabled: true, nameOverride: "realtime" },
                 functions: {
                     enabled: true,
-                    // environment: {
-                    //     VERIFY_JWT: "true",
-                    // },
+                    nameOverride: "functions",
+                    replicaCount: 2,
+                    image: {
+                        repository: "kaivv1/supabase-functions",
+                        pullPolicy: "Always",
+                        tag: "latest",
+                    },
                 },
                 storage: {
+                    nameOverride: "storage",
                     enabled: true,
                     persistence: {
                         enabled: true,
                         size: "5Gi",
                     },
                 },
-                meta: { enabled: true },
+                meta: { enabled: true, nameOverride: "meta" },
             },
         },
         { dependsOn },
