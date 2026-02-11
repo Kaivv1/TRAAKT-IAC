@@ -39,7 +39,6 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                 },
                 studio: {
                     enabled: true,
-                    nameOverride: "studio",
                     environment: {
                         SUPABASE_PUBLIC_URL: "https://supabase.traakt.com",
                     },
@@ -53,18 +52,18 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                 },
                 auth: {
                     enabled: true,
-                    nameOverride: "auth",
+                    // nameOverride: "auth",
                     environment: {
                         GOTRUE_SITE_URL: "https://traakt.com",
                         GOTRUE_URI_ALLOW_LIST: "https://*.traakt.com/*,https://traakt.com/*",
                         GOTRUE_API_EXTERNAL_URL: "https://supabase.traakt.com",
                     },
                 },
-                rest: { enabled: true, nameOverride: "rest" },
-                realtime: { enabled: true, nameOverride: "realtime" },
+                rest: { enabled: true },
+                realtime: { enabled: true },
                 functions: {
                     enabled: true,
-                    nameOverride: "functions",
+                    // nameOverride: "functions",
                     replicaCount: 2,
                     autoscaling: {
                         enabled: true,
@@ -80,19 +79,18 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                     },
                     environment: {
                         // SSL mode options: disable, allow, prefer, require, verify-ca, verify-full
-                        DB_SSL: "verify-full",
+                        // DB_SSL: "verify-full",
                         VERIFY_JWT: true,
                     },
                 },
                 storage: {
-                    nameOverride: "storage",
                     enabled: true,
                     persistence: {
                         enabled: true,
                         size: "5Gi",
                     },
                 },
-                meta: { enabled: true, nameOverride: "meta" },
+                meta: { enabled: true },
             },
         },
         { dependsOn },
