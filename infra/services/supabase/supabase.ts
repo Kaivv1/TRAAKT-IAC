@@ -62,11 +62,6 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                 realtime: { enabled: true },
                 functions: {
                     enabled: true,
-                    image: {
-                        repository: "kaivv1/supabase-functions",
-                        pullPolicy: "Always",
-                        tag: "latest",
-                    },
                     // environment: {
                     //     VERIFY_JWT: "true",
                     // },
