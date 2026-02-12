@@ -66,10 +66,7 @@ export const createSupabaseChart = (namespace: pulumi.Output<string>, dependsOn:
                     // nameOverride: "functions",
                     replicaCount: 2,
                     autoscaling: {
-                        enabled: true,
-                        minReplicas: 2,
-                        maxReplicas: 3,
-                        targetCPUUtilizationPercentage: 80,
+                        enabled: false,
                     },
 
                     image: {
