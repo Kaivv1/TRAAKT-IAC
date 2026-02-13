@@ -13,10 +13,6 @@ on:
         type: string
         default: ""
         required: true
-      deploy_supabase:
-        description: Deploy supabase
-        type: boolean
-        default: false
       deploy_dev_services:
         description: Deploy dev services
         type: boolean
@@ -90,17 +86,8 @@ jobs:
           pulumi stack select infra || \
           pulumi stack select infra --create
 
-          pulumi config set --path 'supabase.enabled' ${{ github.event.inputs.deploy_supabase }}
           pulumi config set --path 'service-environment.dev.enabled' ${{ github.event.inputs.deploy_dev_services }}
           pulumi config set --path 'service-environment.demo.enabled' ${{ github.event.inputs.deploy_demo_services }}
-
-          pulumi config set --secret supabase_jwt_secret ${{ secrets.SUPABASE_JWT_SECRET }}
-          pulumi config set --secret supabase_anon_key ${{ secrets.SUPABASE_ANON_KEY }}
-          pulumi config set --secret supabase_service_role_key ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          pulumi config set --secret supabase_db_name ${{ secrets.SUPABASE_DB_NAME }}
-          pulumi config set --secret supabase_db_password ${{ secrets.SUPABASE_DB_PASSWORD }}
-          pulumi config set --secret supabase_studio_username ${{ secrets.SUPABASE_STUDIO_USERNAME }}
-          pulumi config set --secret supabase_studio_password ${{ secrets.SUPABASE_STUDIO_PASSWORD }}
 
           pulumi up --yes --skip-preview
 
