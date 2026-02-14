@@ -25,6 +25,7 @@ export const createVaultIngress = (namespace: pulumi.Output<string>, dependsOn: 
                     "kubernetes.io/ingress.class": "traefik",
                     "traefik.ingress.kubernetes.io/router.middlewares": middlewaresLiteral,
                     "traefik.ingress.kubernetes.io/router.timeout": "300",
+                    "traefik.ingress.kubernetes.io/service.serversscheme": "https",
                 },
             },
             spec: {

@@ -88,6 +88,21 @@ export const createVaultChart = (namespace: pulumi.Output<string>, dependsOn: pu
                             cpu: "500m",
                         },
                     },
+                    volumes: [
+                        {
+                            name: "vault-tls",
+                            secret: {
+                                secretName: "tls-cert-secret",
+                            },
+                        },
+                    ],
+                    volumeMounts: [
+                        {
+                            name: "vault-tls",
+                            mountPath: "/vault/tls",
+                            readOnly: true,
+                        },
+                    ],
                     updateStrategyType: "OnDelete",
                     ha: {
                         enabled: true,
@@ -99,38 +114,48 @@ export const createVaultChart = (namespace: pulumi.Output<string>, dependsOn: pu
                                 ui = true
 
                                 listener "tcp" {
-                                tls_disable = 1
+                                tls_disable = 0
                                 address = "[::]:8200"
                                 cluster_address = "[::]:8201"
+                                tls_cert_file = "/vault/tls/tls.crt"
+                                tls_key_file = "/vault/tls/tls.key"
                                 }
 
                                 storage "raft" {
                                 path = "/vault/data"
                                 
                                 retry_join {
-                                    leader_api_addr = "http://vault-0.vault-internal:8200"
+                                    leader_api_addr = "https://vault-0.vault-internal:8200"
+                                    leader_ca_cert_file = "/vault/tls/tls.crt"
+                                    leader_client_cert_file = "/vault/tls/tls.crt"
+                                    leader_client_key_file = "/vault/tls/tls.key"
                                 }
                                 
                                 retry_join {
-                                    leader_api_addr = "http://vault-1.vault-internal:8200"
+                                    leader_api_addr = "https://vault-1.vault-internal:8200"
+                                    leader_ca_cert_file = "/vault/tls/tls.crt"
+                                    leader_client_cert_file = "/vault/tls/tls.crt"
+                                    leader_client_key_file = "/vault/tls/tls.key"
                                 }
                                 
                                 retry_join {
-                                    leader_api_addr = "http://vault-2.vault-internal:8200"
+                                    leader_api_addr = "https://vault-2.vault-internal:8200"
+                                    leader_ca_cert_file = "/vault/tls/tls.crt"
+                                    leader_client_cert_file = "/vault/tls/tls.crt"
+                                    leader_client_key_file = "/vault/tls/tls.key"
                                 }
                                 
-                                # Performance tuning for your hardware
                                 performance_multiplier = 1
                                 }
 
                                 service_registration "kubernetes" {}
 
-                                disable_mlock = true
-
                                 telemetry {
                                 prometheus_retention_time = "30s"
                                 disable_hostname = true
                                 }
+
+                                disable_mlock = true
                                 `,
                         },
                     },
