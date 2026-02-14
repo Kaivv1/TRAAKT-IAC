@@ -3,6 +3,7 @@ import { createCertManagerChart, createCertManagerNs } from "./cert-manager";
 import { createCertificate } from "./certificate";
 import { createLetsEncrypt } from "./cluster-issuers";
 import { createReflectorChart } from "./reflector";
+import { createCertCheckCommand } from "./cert-check-command";
 
 export const deployCertManager = () => {
     const certManagerNs = createCertManagerNs();
@@ -22,6 +23,7 @@ export const deployCertManager = () => {
     );
     const letsEncrypt = createLetsEncrypt([checkCertManagerAvailability]);
     const certificate = createCertificate(certManagerNs.metadata.name, [reflector, letsEncrypt]);
+    const certChekCommand = createCertCheckCommand([certificate]);
 
-    return { certManagerNs, certManager, reflector, letsEncrypt, certificate };
+    return { certManagerNs, certManager, reflector, letsEncrypt, certificate, certChekCommand };
 };
