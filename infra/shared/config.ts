@@ -12,5 +12,5 @@ export const serviceEnvironemnts = config.requireObject<Record<string, { enabled
 //     supabaseStudioUsername: config.requireSecret("supabase_studio_username"),
 //     supabaseStudioPassword: config.requireSecret("supabase_studio_password"),
 // };
-export const domains = ["dev.traakt.com", "demo.traakt.com", "traakt.com", "supabase.traakt.com"];
+export const domains = ["dev.traakt.com", "demo.traakt.com", "traakt.com", "vault.traakt.com"];
 export const issuer = "letsencrypt";

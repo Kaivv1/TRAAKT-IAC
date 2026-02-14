@@ -2,6 +2,7 @@ import * as config from "./shared/config";
 import * as command from "@pulumi/command";
 import { deployCertManager } from "./core-infra/cert-manager";
 import { deployBackendService } from "./services/backend";
+import { deployVault } from "./core-infra/vault";
 
 const { certificate } = deployCertManager();
 const certificateCheck = new command.local.Command(
@@ -18,6 +19,8 @@ const certificateCheck = new command.local.Command(
     },
     { dependsOn: certificate },
 );
+
+deployVault([certificateCheck]);
 
 for (const [env, conf] of Object.entries(config.serviceEnvironemnts)) {
     if (!conf.enabled) continue;
