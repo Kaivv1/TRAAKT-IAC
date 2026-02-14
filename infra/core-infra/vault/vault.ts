@@ -16,6 +16,11 @@ export const createVaultChart = (namespace: pulumi.Output<string>, dependsOn: pu
                 injector: {
                     enabled: true,
                     replicas: 2,
+                    serviceAccount: {
+                        create: true,
+                        name: "vault-agent-injector",
+                        annotations: {},
+                    },
                     resources: {
                         requests: {
                             memory: "128Mi",
@@ -67,6 +72,11 @@ export const createVaultChart = (namespace: pulumi.Output<string>, dependsOn: pu
                     image: {
                         repository: "hashicorp/vault",
                         pullPolicy: "IfNotPresent",
+                    },
+                    serviceAccount: {
+                        create: true,
+                        name: "vault",
+                        annotations: {},
                     },
                     resources: {
                         requests: {
