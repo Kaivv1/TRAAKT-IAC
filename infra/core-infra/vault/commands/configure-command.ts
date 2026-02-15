@@ -7,6 +7,7 @@ export const createConfigureVaultCommand = (dependsOn: pulumi.Resource[]) => {
         {
             create: `
                 ROOT_TOKEN=$(cat vault-init.json | jq -r '.root_token')
+                K8S_HOST=$(kubectl exec vault-0 -n vault -- sh -c 'echo $KUBERNETES_PORT_443_TCP_ADDR')
                 echo 'path "secret/data/backend/*" { capabilities = ["read"] }' > /tmp/vault-policy.hcl
                 kubectl cp /tmp/vault-policy.hcl vault/vault-0:/tmp/vault-policy.hcl
 
@@ -17,7 +18,7 @@ export const createConfigureVaultCommand = (dependsOn: pulumi.Resource[]) => {
                 vault secrets enable -path=secret kv-v2 || true
 
                 vault write auth/kubernetes/config \
-                    kubernetes_host='https://\$KUBERNETES_PORT_443_TCP_ADDR:443' \
+                    kubernetes_host='https://$K8S_HOST:443' \
                     token_reviewer_jwt=@/var/run/secrets/kubernetes.io/serviceaccount/token \
                     kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
                 
