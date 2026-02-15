@@ -31,13 +31,7 @@ export const createPersistentFilePod = (namespace: pulumi.Output<string>, depend
                         command: ["/bin/sh", "-c"],
                         args: [
                             `
-                            until vault status 2>/dev/null; do
-                                sleep 5
-                            done
-
-                            if [ ! -f /vault-init/vault-init.json ]; then
-                                vault operator init -key-shares=5 -key-threshold=3 -format=json > /vault-init/vault-init.json
-                            fi
+                            vault operator init -key-shares=5 -key-threshold=3 -format=json > /vault-init/vault-init.json
                             sleep infinity
                             `,
                         ],
