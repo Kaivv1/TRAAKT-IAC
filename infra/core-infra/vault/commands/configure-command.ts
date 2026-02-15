@@ -7,14 +7,15 @@ export const createConfigureVaultCommand = (dependsOn: pulumi.Resource[]) => {
         {
             create: `
                 ROOT_TOKEN=$(cat vault-init.json | jq -r '.root_token')
+                POLICY='path "secret/data/backend/*" { capabilities = ["read"] }'
                 kubectl exec vault-0 -n vault -- sh -c "
                 export VAULT_TOKEN='$ROOT_TOKEN'
-
+                
                 vault secrets enable -path=secret kv-v2 || true
                 vault auth enable kubernetes || true
                 vault write auth/kubernetes/config kubernetes_host='https://\$KUBERNETES_PORT_443_TCP_ADDR:443'
 
-                echo 'path \"secret/data/backend/*\" { capabilities = [\"read\"] }' | vault policy write backend-policy -
+                echo '$POLICY' | vault policy write backend-policy -
 
                 vault write auth/kubernetes/role/backend-dev \
                     bound_service_account_names=backend \
