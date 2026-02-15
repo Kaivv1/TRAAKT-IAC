@@ -3,8 +3,9 @@ import * as command from "@pulumi/command";
 import { createVaultNs } from "./namespace";
 import { createVaultIngress } from "./ingress";
 import { createVaultChart } from "./vault";
-import { createUnsealVaultsCommand } from "./unseal-command";
+import { createUnsealVaultsCommand } from "./commands/unseal-command";
 import { createPersistentFilePod } from "./file-pod";
+import { createConfigureVaultCommand } from "./commands/configure-command";
 
 export const deployVault = (dependsOn: pulumi.Resource[]) => {
     const vaultNs = createVaultNs(dependsOn);
@@ -19,6 +20,7 @@ export const deployVault = (dependsOn: pulumi.Resource[]) => {
     );
     const { initStoragePod } = createPersistentFilePod(vaultNs.metadata.name, [vaultPodCheck]);
     const unsealVaultsCommand = createUnsealVaultsCommand([initStoragePod]);
+    const configureVaultCommand = createConfigureVaultCommand([unsealVaultsCommand]);
 
-    return { vaultNs, vaultChart, vaultIngress, unsealVaultsCommand };
+    return { vaultNs, vaultChart, vaultIngress, unsealVaultsCommand, configureVaultCommand };
 };
