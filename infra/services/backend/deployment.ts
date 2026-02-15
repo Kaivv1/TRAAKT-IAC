@@ -13,6 +13,12 @@ export const createBackendDeployment = (
                 name: `backend-${env}`,
                 namespace,
                 labels: { app: "backend", environment: env },
+                // annotations: {
+                //     // Vault injection annotations
+                //     "vault.hashicorp.com/agent-inject": "true",
+                //     "vault.hashicorp.com/role": "backend-dev",
+                //     "vault.hashicorp.com/agent-inject-secret-database": "secret/data/backend/database",
+                // },
             },
             spec: {
                 selector: { matchLabels: { app: "backend", environment: env } },
