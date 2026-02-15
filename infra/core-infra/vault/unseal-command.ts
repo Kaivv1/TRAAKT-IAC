@@ -7,6 +7,11 @@ export const createUnsealVaultsCommand = (dependsOn: pulumi.Resource[]) => {
         {
             create: `
             kubectl wait --for=condition=Ready -n vault pod/init-pod --timeout=3m
+
+            until kubectl exec -n vault init-pod -- test -f /vault-init/vault-init.json 2>/dev/null; do
+                sleep 5
+            done
+
             kubectl cp vault/init-pod:/vault-init/vault-init.json ./vault-init.json
 
             sleep 5
