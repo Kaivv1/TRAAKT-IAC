@@ -14,11 +14,7 @@ export const createConfigureVaultCommand = (dependsOn: pulumi.Resource[]) => {
                 vault auth enable kubernetes || true
                 vault write auth/kubernetes/config kubernetes_host='https://\$KUBERNETES_PORT_443_TCP_ADDR:443'
 
-                vault policy write backend-policy - <<'EOF'
-                    path \"secret/data/backend/*\" {
-                    capabilities = [\"read\"]
-                }
-                EOF
+                echo 'path \"secret/data/backend/*\" { capabilities = [\"read\"] }' | vault policy write backend-policy -
 
                 vault write auth/kubernetes/role/backend-dev \
                     bound_service_account_names=backend \
