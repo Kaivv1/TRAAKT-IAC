@@ -10,10 +10,14 @@ function getSecrets() {
         return {};
     }
 }
+let secrets = getSecrets();
+
+fs.watchFile('/vault/secrets/backend.json', () => {
+    console.log('Secrets file changed, reloading...');
+    secrets = getSecrets();
+});
 
 const server = http.createServer((req, res) => {
-    const secrets = getSecrets();
-
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(
         JSON.stringify({
@@ -25,5 +29,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(8080, () => {
     console.log('Server running on http://localhost:8080');
-    console.log('Loaded secrets:', getSecrets());
+    console.log('Loaded secrets:', secrets);
 });
