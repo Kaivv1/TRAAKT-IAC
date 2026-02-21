@@ -1,5 +1,5 @@
 config:
-  supabase:
+  vault:
     enabled: false
   service-environment:
     dev:

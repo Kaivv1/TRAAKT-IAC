@@ -13,6 +13,10 @@ on:
         type: string
         default: ""
         required: true
+      deploy_vault:
+        description: Deploy vault
+        type: boolean
+        default: false
       deploy_dev_services:
         description: Deploy dev services
         type: boolean
@@ -88,6 +92,7 @@ jobs:
 
           pulumi config set --path 'service-environment.dev.enabled' ${{ github.event.inputs.deploy_dev_services }}
           pulumi config set --path 'service-environment.demo.enabled' ${{ github.event.inputs.deploy_demo_services }}
+          pulumi config set --path 'vault.enabled' ${{ github.event.inputs.deploy_vault }}
 
           pulumi up --yes --skip-preview
 

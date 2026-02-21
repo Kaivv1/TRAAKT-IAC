@@ -2,7 +2,8 @@ import * as pulumi from "@pulumi/pulumi";
 
 const config = new pulumi.Config();
 
-export const serviceEnvironemnts = config.requireObject<Record<string, { enabled: boolean }>>("service-environment");
+export const serviceEnvironments = config.requireObject<Record<string, { enabled: boolean }>>("service-environment");
+export const vault = config.requireObject<{ enabled: boolean }>("vault");
 // export const secrets = {
 //     supabaseJwtSecret: config.requireSecret("supabase_jwt_secret"),
 //     supabaseAnonKey: config.requireSecret("supabase_anon_key"),
