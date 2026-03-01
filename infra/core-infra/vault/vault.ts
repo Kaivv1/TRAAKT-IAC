@@ -15,7 +15,6 @@ export const createVaultChart = (namespace: pulumi.Output<string>, dependsOn: pu
                 global: {
                     enabled: true,
                     tlsDisable: false,
-                    externalVaultAddr: "https://vault.vault.svc:8200",
                 },
                 injector: {
                     enabled: true,
