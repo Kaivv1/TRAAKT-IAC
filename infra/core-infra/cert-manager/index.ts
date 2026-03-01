@@ -1,7 +1,12 @@
 import * as commnad from "@pulumi/command";
 import { createCertManagerChart, createCertManagerNs } from "./cert-manager";
 import { createServicesCertificate, createVaultCaCert, createVaultCertificate } from "./certificates";
-import { createLetsEncryptTest, createInternalIssuer, createSelfSignIssuer } from "./cluster-issuers";
+import {
+    createLetsEncryptTest,
+    createInternalIssuer,
+    createSelfSignIssuer,
+    createLetsEncrypt,
+} from "./cluster-issuers";
 import { createReflectorChart } from "./reflector";
 import {
     createServicesCertCheckCommand,
@@ -25,7 +30,7 @@ export const deployCertManager = () => {
         },
         { dependsOn: [certManager] },
     );
-    const letsEncryptIssuer = createLetsEncryptTest([checkCertManagerAvailability]);
+    const letsEncryptIssuer = createLetsEncrypt([checkCertManagerAvailability]);
     const selfSignIssuer = createSelfSignIssuer([checkCertManagerAvailability]);
     const servicesCertificate = createServicesCertificate(certManagerNs.metadata.name, [reflector, letsEncryptIssuer]);
     const vaultCaCertificate = createVaultCaCert(certManagerNs.metadata.name, [selfSignIssuer]);
