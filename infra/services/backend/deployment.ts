@@ -34,8 +34,6 @@ export const createBackendDeployment = (
                         annotations: {
                             "vault.hashicorp.com/agent-inject": "true",
                             "vault.hashicorp.com/role": `backend-${env}`,
-                            "vault.hashicorp.com/agent-cache-enable": "true",
-                            "vault.hashicorp.com/template-static-secret-render-interval": "1m",
                             "vault.hashicorp.com/agent-inject-secret-backend.json": "secret/data/backend/config",
                             "vault.hashicorp.com/agent-inject-template-backend.json": `
                                 {{- with secret "secret/data/backend/config" -}}

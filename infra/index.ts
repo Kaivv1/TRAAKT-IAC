@@ -7,9 +7,9 @@ const certManager = deployCertManager();
 let vault: ReturnType<typeof deployVault> | null = null;
 
 if (config.vault.enabled) {
-    vault = deployVault([certManager.certChekCommand]);
+    vault = deployVault([certManager.vaultCertCheckCommand]);
 }
-const triggerCmd = vault ? vault.configureVaultCommand : certManager.certChekCommand;
+const triggerCmd = vault ? vault.configureVaultCommand : certManager.servicesCertCheckCommand;
 for (const [env, conf] of Object.entries(config.serviceEnvironments)) {
     if (!conf.enabled) continue;
     deployBackendService(env, [triggerCmd]);

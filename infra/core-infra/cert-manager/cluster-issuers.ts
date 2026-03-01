@@ -3,7 +3,7 @@ import * as pulumi from "@pulumi/pulumi";
 
 export const createLetsEncryptTest = (dependsOn: pulumi.Resource[]) => {
     return new k8s.apiextensions.CustomResource(
-        "letsencrypt-test",
+        "letsencrypt-test-issuer",
         {
             apiVersion: "cert-manager.io/v1",
             kind: "ClusterIssuer",
@@ -23,7 +23,7 @@ export const createLetsEncryptTest = (dependsOn: pulumi.Resource[]) => {
 
 export const createLetsEncrypt = (dependsOn: pulumi.Resource[]) => {
     return new k8s.apiextensions.CustomResource(
-        "letsencrypt",
+        "letsencrypt-issuer",
         {
             apiVersion: "cert-manager.io/v1",
             kind: "ClusterIssuer",
@@ -34,6 +34,42 @@ export const createLetsEncrypt = (dependsOn: pulumi.Resource[]) => {
                     email: "gigoo2442@gmail.com",
                     privateKeySecretRef: { name: "letsencrypt-key" },
                     solvers: [{ http01: { ingress: { class: "traefik" } } }],
+                },
+            },
+        },
+        { dependsOn },
+    );
+};
+
+export const createSelfSignIssuer = (dependsOn: pulumi.Resource[]) => {
+    return new k8s.apiextensions.CustomResource(
+        "selfsign-issuer",
+        {
+            apiVersion: "cert-manager.io/v1",
+            kind: "ClusterIssuer",
+            metadata: {
+                name: "selfsign-issuer",
+            },
+            spec: {
+                selfSigned: {},
+            },
+        },
+        { dependsOn },
+    );
+};
+
+export const createInternalIssuer = (dependsOn: pulumi.Resource[]) => {
+    return new k8s.apiextensions.CustomResource(
+        "internal-issuer",
+        {
+            apiVersion: "cert-manager.io/v1",
+            kind: "ClusterIssuer",
+            metadata: {
+                name: "internal-issuer",
+            },
+            spec: {
+                ca: {
+                    secretName: "internal-ca-secret",
                 },
             },
         },

@@ -1,9 +1,9 @@
 import * as commnad from "@pulumi/command";
 import { createCertManagerChart, createCertManagerNs } from "./cert-manager";
-import { createCertificate } from "./certificate";
-import { createLetsEncryptTest } from "./cluster-issuers";
+import { createServicesCertificate, createVaultCaCert, createVaultCertificate } from "./certificates";
+import { createLetsEncryptTest, createInternalIssuer, createSelfSignIssuer } from "./cluster-issuers";
 import { createReflectorChart } from "./reflector";
-import { createCertCheckCommand } from "./cert-check-command";
+import { createServicesCertCheckCommand, createVaultCertCheckCommand } from "./cert-check-command";
 
 export const deployCertManager = () => {
     const certManagerNs = createCertManagerNs();
@@ -21,9 +21,24 @@ export const deployCertManager = () => {
         },
         { dependsOn: [certManager] },
     );
-    const letsEncrypt = createLetsEncryptTest([checkCertManagerAvailability]);
-    const certificate = createCertificate(certManagerNs.metadata.name, [reflector, letsEncrypt]);
-    const certChekCommand = createCertCheckCommand([certificate]);
+    const letsEncryptIssuer = createLetsEncryptTest([checkCertManagerAvailability]);
+    const selfSignIssuer = createSelfSignIssuer([checkCertManagerAvailability]);
+    const servicesCertificate = createServicesCertificate(certManagerNs.metadata.name, [reflector, letsEncryptIssuer]);
+    const vaultCaCertificate = createVaultCaCert(certManagerNs.metadata.name, [selfSignIssuer]);
+    const internalIssuer = createInternalIssuer([vaultCaCertificate]);
+    const vaultCertificate = createVaultCertificate(certManagerNs.metadata.name, [internalIssuer]);
+    const servicesCertCheckCommand = createServicesCertCheckCommand([servicesCertificate]);
+    const vaultCertCheckCommand = createVaultCertCheckCommand([vaultCertificate]);
 
-    return { certManagerNs, certManager, reflector, letsEncrypt, certificate, certChekCommand };
+    return {
+        certManagerNs,
+        certManager,
+        reflector,
+        letsEncryptIssuer,
+        servicesCertificate,
+        servicesCertCheckCommand,
+        vaultCertCheckCommand,
+        selfSignIssuer,
+        internalIssuer,
+    };
 };

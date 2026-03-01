@@ -4,6 +4,7 @@ const config = new pulumi.Config();
 
 export const serviceEnvironments = config.requireObject<Record<string, { enabled: boolean }>>("service-environment");
 export const vault = config.requireObject<{ enabled: boolean }>("vault");
+export const postgres = config.requireObject<{ enabled: boolean }>("postgres");
 // export const secrets = {
 //     supabaseJwtSecret: config.requireSecret("supabase_jwt_secret"),
 //     supabaseAnonKey: config.requireSecret("supabase_anon_key"),
@@ -14,4 +15,4 @@ export const vault = config.requireObject<{ enabled: boolean }>("vault");
 //     supabaseStudioPassword: config.requireSecret("supabase_studio_password"),
 // };
 export const domains = ["dev.traakt.com", "demo.traakt.com", "traakt.com", "vault.traakt.com"];
-export const issuer = "letsencrypt-test";
+export const servicesIssuer = "letsencrypt-test-issuer";

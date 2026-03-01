@@ -1,4 +1,6 @@
 config:
+  postgres: 
+    enabled: false
   vault:
     enabled: false
   service-environment:
