@@ -38,28 +38,32 @@ export const createServicesCertificate = (namespace: pulumi.Output<string>, depe
 };
 
 export const createVaultCaCert = (namespace: pulumi.Output<string>, dependsOn: pulumi.Resource[]) => {
-    return new k8s.apiextensions.CustomResource("self-signed-ca", {
-        apiVersion: "cert-manager.io/v1",
-        kind: "Certificate",
-        metadata: {
-            name: "self-signed-ca",
-            namespace,
-        },
-        spec: {
-            isCA: true,
-            commonName: "self-signed-ca",
-            secretName: "internal-ca-secret",
-            privateKey: {
-                algorithm: "ECDSA",
-                size: 256,
+    return new k8s.apiextensions.CustomResource(
+        "self-signed-ca",
+        {
+            apiVersion: "cert-manager.io/v1",
+            kind: "Certificate",
+            metadata: {
+                name: "self-signed-ca",
+                namespace,
             },
-            issuerRef: {
-                name: "selfsign-issuer",
-                kind: "ClusterIssuer",
-                group: "cert-manager.io",
+            spec: {
+                isCA: true,
+                commonName: "self-signed-ca",
+                secretName: "internal-ca-secret",
+                privateKey: {
+                    algorithm: "ECDSA",
+                    size: 256,
+                },
+                issuerRef: {
+                    name: "selfsign-issuer",
+                    kind: "ClusterIssuer",
+                    group: "cert-manager.io",
+                },
             },
         },
-    });
+        { dependsOn },
+    );
 };
 
 export const createVaultCertificate = (namespace: pulumi.Output<string>, dependsOn: pulumi.Resource[]) => {
