@@ -11,15 +11,15 @@ export const deployVault = (dependsOn: pulumi.Resource[]) => {
     const vaultNs = createVaultNs(dependsOn);
     const vaultChart = createVaultChart(vaultNs.metadata.name, [vaultNs]);
     const vaultIngress = createVaultIngress(vaultNs.metadata.name, [vaultChart]);
+    const vaultStatefulSet = vaultChart.getResource("apps/v1/StatefulSet", "vault/vault");
     const vaultPodCheck = new command.local.Command(
         "check-vault-pod",
         {
             create: `
-                kubectl rollout status statefulset/vault -n vault --timeout=5m
                 kubectl wait --for=condition=Initialized pod/vault-0 -n vault --timeout=5m
             `,
         },
-        { dependsOn: [vaultChart] },
+        { dependsOn: [vaultStatefulSet] },
     );
     const { initStoragePod } = createPersistentFilePod(vaultNs.metadata.name, [vaultPodCheck]);
     const unsealVaultsCommand = createUnsealVaultsCommand([initStoragePod]);
