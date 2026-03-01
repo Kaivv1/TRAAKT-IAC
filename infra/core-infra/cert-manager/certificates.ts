@@ -99,10 +99,10 @@ export const createVaultCertificate = (namespace: pulumi.Output<string>, depends
                     annotations: {
                         "reflector.v1.k8s.emberstack.com/reflection-allowed": "true",
                         "reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces":
-                            "vault,backend-service-dev,backend-service-demo,kube-system",
+                            "vault,backend-service-dev,backend-service-demo",
                         "reflector.v1.k8s.emberstack.com/reflection-auto-enabled": "true",
                         "reflector.v1.k8s.emberstack.com/reflection-auto-namespaces":
-                            "vault,backend-service-dev,backend-service-demo,kube-system",
+                            "vault,backend-service-dev,backend-service-demo",
                     },
                 },
             },

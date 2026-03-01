@@ -11,7 +11,7 @@ import { createTrustInternalCert } from "./servers-transport";
 export const deployVault = (dependsOn: pulumi.Resource[]) => {
     const vaultNs = createVaultNs(dependsOn);
     const vaultChart = createVaultChart(vaultNs.metadata.name, [vaultNs]);
-    const trustInternalCaCert = createTrustInternalCert([vaultChart]);
+    const trustInternalCaCert = createTrustInternalCert(vaultNs.metadata.name, [vaultChart]);
     const vaultIngress = createVaultIngress(vaultNs.metadata.name, [trustInternalCaCert]);
     const vaultPodCheck = new command.local.Command(
         "check-vault-pod",
