@@ -14,7 +14,7 @@ export const deployVault = (dependsOn: pulumi.Resource[]) => {
     const vaultPodCheck = new command.local.Command(
         "check-vault-pod",
         {
-            create: `kubectl wait --for=jsonpath='{.status.phase}'=Running -n vault pod/vault-0 --timeout=3m`,
+            create: `kubectl wait --for=condition=Initialized pod/vault-0 -n vault --timeout=5m`,
         },
         { dependsOn: [vaultIngress] },
     );
