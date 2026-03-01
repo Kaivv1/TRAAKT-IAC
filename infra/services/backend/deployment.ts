@@ -37,7 +37,7 @@ export const createBackendDeployment = (
                             "vault.hashicorp.com/agent-inject-secret-backend.json": "secret/data/backend/config",
                             "vault.hashicorp.com/service": "https://vault.vault.svc:8200",
                             "vault.hashicorp.com/tls-secret": "tls-vault-cert-secret",
-                            "vault.hashicorp.com/ca-cert": "/vault/custom/ca.crt",
+                            "vault.hashicorp.com/ca-cert": "/vault/tls/ca.crt",
                             "vault.hashicorp.com/agent-inject-template-backend.json": `
                                 {{- with secret "secret/data/backend/config" -}}
                                 {{ .Data.data | toJSONPretty }}
