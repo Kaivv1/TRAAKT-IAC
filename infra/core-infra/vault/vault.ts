@@ -2,12 +2,15 @@ import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
 
 export const createVaultChart = (namespace: pulumi.Output<string>, dependsOn: pulumi.Resource[]) => {
-    return new k8s.helm.v3.Chart(
+    return new k8s.helm.v3.Release(
         "vault",
         {
-            namespace,
+            name: "vault",
             chart: "vault",
-            fetchOpts: { repo: "https://helm.releases.hashicorp.com" },
+            namespace,
+            repositoryOpts: { repo: "https://helm.releases.hashicorp.com" },
+            waitForJobs: true,
+            timeout: 400,
             values: {
                 global: {
                     enabled: true,
