@@ -10,7 +10,7 @@ export const createTrustInternalCert = (dependsOn: pulumi.Resource[]) => {
             metadata: { name: "vault-transport", namespace: "kube-system" },
             spec: {
                 serverName: "vault.vault.svc",
-                rootCAs: [{ secret: "tls-vault-cert-secret" }],
+                rootCAsSecrets: ["tls-vault-cert-secret"],
             },
         },
         { dependsOn },
