@@ -31,7 +31,15 @@ export const createPersistentFilePod = (namespace: pulumi.Output<string>, depend
                         command: ["/bin/sh", "-c"],
                         args: [
                             `
+                            echo "Waiting for Vault TCP to be reachable..."
+                            until wget -q --spider --no-check-certificate https://vault-0.vault-internal:8200/v1/sys/health 2>&1; do
+                                echo "Vault not reachable yet, waiting..."
+                                sleep 5
+                            done
+
+                            echo "Vault reachable, initializing..."
                             vault operator init -key-shares=5 -key-threshold=3 -format=json > /vault-init/vault-init.json
+                            cat /vault-init/vault-init.json
                             sleep infinity
                             `,
                         ],
