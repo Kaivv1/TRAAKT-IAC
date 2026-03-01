@@ -6,11 +6,13 @@ import { createVaultChart } from "./vault";
 import { createUnsealVaultsCommand } from "./commands/unseal-command";
 import { createPersistentFilePod } from "./file-pod";
 import { createConfigureVaultCommand } from "./commands/configure-command";
+import { createTrustInternalCert } from "./servers-transport";
 
 export const deployVault = (dependsOn: pulumi.Resource[]) => {
     const vaultNs = createVaultNs(dependsOn);
     const vaultChart = createVaultChart(vaultNs.metadata.name, [vaultNs]);
-    const vaultIngress = createVaultIngress(vaultNs.metadata.name, [vaultChart]);
+    const trustInternalCaCert = createTrustInternalCert([vaultChart]);
+    const vaultIngress = createVaultIngress(vaultNs.metadata.name, [trustInternalCaCert]);
     const vaultPodCheck = new command.local.Command(
         "check-vault-pod",
         {
