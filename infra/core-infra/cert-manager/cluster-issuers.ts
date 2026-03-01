@@ -7,7 +7,7 @@ export const createLetsEncryptTest = (dependsOn: pulumi.Resource[]) => {
         {
             apiVersion: "cert-manager.io/v1",
             kind: "ClusterIssuer",
-            metadata: { name: "letsencrypt-test" },
+            metadata: { name: "letsencrypt-test-issuer" },
             spec: {
                 acme: {
                     server: "https://acme-staging-v02.api.letsencrypt.org/directory",
@@ -27,7 +27,7 @@ export const createLetsEncrypt = (dependsOn: pulumi.Resource[]) => {
         {
             apiVersion: "cert-manager.io/v1",
             kind: "ClusterIssuer",
-            metadata: { name: "letsencrypt" },
+            metadata: { name: "letsencrypt-issuer" },
             spec: {
                 acme: {
                     server: "https://acme-v02.api.letsencrypt.org/directory",
