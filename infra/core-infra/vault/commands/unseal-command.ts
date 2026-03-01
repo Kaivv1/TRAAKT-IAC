@@ -20,16 +20,20 @@ export const createUnsealVaultsCommand = (dependsOn: pulumi.Resource[]) => {
                 kubectl exec -n vault vault-0 -- sh -c 'VAULT_CACERT=/vault/userconfig/vault-tls/ca.crt vault operator unseal "$1"' -- "$KEY2"
                 kubectl exec -n vault vault-0 -- sh -c 'VAULT_CACERT=/vault/userconfig/vault-tls/ca.crt vault operator unseal "$1"' -- "$KEY3"
 
-                sleep 10
-
                 kubectl wait --for=condition=Initialized -n vault pod/vault-1 --timeout=3m
+                until kubectl exec -n vault vault-1 -- sh -c 'VAULT_CACERT=/vault/userconfig/vault-tls/ca.crt vault status' 2>/dev/null; do
+                    echo "vault-1 not ready yet..."
+                    sleep 3
+                done
                 kubectl exec -n vault vault-1 -- sh -c 'VAULT_CACERT=/vault/userconfig/vault-tls/ca.crt vault operator unseal "$1"' -- "$KEY1"
                 kubectl exec -n vault vault-1 -- sh -c 'VAULT_CACERT=/vault/userconfig/vault-tls/ca.crt vault operator unseal "$1"' -- "$KEY2"
                 kubectl exec -n vault vault-1 -- sh -c 'VAULT_CACERT=/vault/userconfig/vault-tls/ca.crt vault operator unseal "$1"' -- "$KEY3"
 
-                sleep 10
-
                 kubectl wait --for=condition=Initialized -n vault pod/vault-2 --timeout=3m
+                until kubectl exec -n vault vault-2 -- sh -c 'VAULT_CACERT=/vault/userconfig/vault-tls/ca.crt vault status' 2>/dev/null; do
+                    echo "vault-2 not ready yet..."
+                    sleep 3
+                done
                 kubectl exec -n vault vault-2 -- sh -c 'VAULT_CACERT=/vault/userconfig/vault-tls/ca.crt vault operator unseal "$1"' -- "$KEY1"
                 kubectl exec -n vault vault-2 -- sh -c 'VAULT_CACERT=/vault/userconfig/vault-tls/ca.crt vault operator unseal "$1"' -- "$KEY2"
                 kubectl exec -n vault vault-2 -- sh -c 'VAULT_CACERT=/vault/userconfig/vault-tls/ca.crt vault operator unseal "$1"' -- "$KEY3"

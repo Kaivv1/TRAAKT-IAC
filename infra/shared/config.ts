@@ -15,4 +15,4 @@ export const postgres = config.requireObject<{ enabled: boolean }>("postgres");
 //     supabaseStudioPassword: config.requireSecret("supabase_studio_password"),
 // };
 export const domains = ["dev.traakt.com", "demo.traakt.com", "traakt.com", "vault.traakt.com"];
-export const servicesIssuer = "letsencrypt-test-issuer";
+export const servicesIssuer = "letsencrypt-issuer";
