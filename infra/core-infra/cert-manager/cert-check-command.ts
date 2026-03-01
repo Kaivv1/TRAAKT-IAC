@@ -34,3 +34,20 @@ export const createVaultCertCheckCommand = (dependsOn: pulumi.Resource[]) => {
         { dependsOn },
     );
 };
+
+export const createVaultCaCertCheckCommand = (dependsOn: pulumi.Resource[]) => {
+    return new command.local.Command(
+        "vault-ca-certificate-check",
+        {
+            create: `
+            echo "Checking if certificate is ready..."
+            kubectl wait --for=condition=Ready certificate/self-signed-ca -n cert-manager --timeout=8m || {
+                echo "Certificate check failed!"
+                exit 1
+            }
+            echo "Certificate ready!"
+        `,
+        },
+        { dependsOn },
+    );
+};

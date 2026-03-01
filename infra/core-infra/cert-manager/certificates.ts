@@ -23,10 +23,10 @@ export const createServicesCertificate = (namespace: pulumi.Output<string>, depe
                     annotations: {
                         "reflector.v1.k8s.emberstack.com/reflection-allowed": "true",
                         "reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces":
-                            "backend-service-dev,backend-service-demo,vault,postgres-service,redis-service",
+                            "backend-service-dev,backend-service-demo,postgres-service,redis-service",
                         "reflector.v1.k8s.emberstack.com/reflection-auto-enabled": "true",
                         "reflector.v1.k8s.emberstack.com/reflection-auto-namespaces":
-                            "backend-service-dev,backend-service-demo,vault,postgres-service,redis-service",
+                            "backend-service-dev,backend-service-demo,postgres-service,redis-service",
                     },
                 },
             },
@@ -90,6 +90,7 @@ export const createVaultCertificate = (namespace: pulumi.Output<string>, depends
                     "vault.vault.svc.cluster.local",
                     "localhost",
                 ],
+                ipAddresses: ["127.0.0.1"],
                 secretTemplate: {
                     annotations: {
                         "reflector.v1.k8s.emberstack.com/reflection-allowed": "true",

@@ -3,7 +3,11 @@ import { createCertManagerChart, createCertManagerNs } from "./cert-manager";
 import { createServicesCertificate, createVaultCaCert, createVaultCertificate } from "./certificates";
 import { createLetsEncryptTest, createInternalIssuer, createSelfSignIssuer } from "./cluster-issuers";
 import { createReflectorChart } from "./reflector";
-import { createServicesCertCheckCommand, createVaultCertCheckCommand } from "./cert-check-command";
+import {
+    createServicesCertCheckCommand,
+    createVaultCaCertCheckCommand,
+    createVaultCertCheckCommand,
+} from "./cert-check-command";
 
 export const deployCertManager = () => {
     const certManagerNs = createCertManagerNs();
@@ -25,7 +29,8 @@ export const deployCertManager = () => {
     const selfSignIssuer = createSelfSignIssuer([checkCertManagerAvailability]);
     const servicesCertificate = createServicesCertificate(certManagerNs.metadata.name, [reflector, letsEncryptIssuer]);
     const vaultCaCertificate = createVaultCaCert(certManagerNs.metadata.name, [selfSignIssuer]);
-    const internalIssuer = createInternalIssuer([vaultCaCertificate]);
+    const vaultCaCertCheckCommand = createVaultCaCertCheckCommand([vaultCaCertificate]);
+    const internalIssuer = createInternalIssuer([vaultCaCertCheckCommand]);
     const vaultCertificate = createVaultCertificate(certManagerNs.metadata.name, [internalIssuer]);
     const servicesCertCheckCommand = createServicesCertCheckCommand([servicesCertificate]);
     const vaultCertCheckCommand = createVaultCertCheckCommand([vaultCertificate]);
