@@ -38,13 +38,22 @@ export const createPersistentFilePod = (namespace: pulumi.Output<string>, depend
                         env: [
                             {
                                 name: "VAULT_ADDR",
-                                value: "http://vault-0.vault-internal:8200",
+                                value: "https://vault-0.vault-internal:8200",
+                            },
+                            {
+                                name: "VAULT_CACERT",
+                                value: "/vault/userconfig/vault-tls/ca.crt",
                             },
                         ],
                         volumeMounts: [
                             {
                                 name: "init-vault-storage",
                                 mountPath: "/vault-init",
+                            },
+                            {
+                                name: "vault-tls",
+                                mountPath: "/vault/userconfig/vault-tls",
+                                readOnly: true,
                             },
                         ],
                     },
@@ -54,6 +63,12 @@ export const createPersistentFilePod = (namespace: pulumi.Output<string>, depend
                         name: "init-vault-storage",
                         persistentVolumeClaim: {
                             claimName: initPvc.metadata.name,
+                        },
+                    },
+                    {
+                        name: "vault-tls",
+                        secret: {
+                            secretName: "tls-vault-cert-secret",
                         },
                     },
                 ],
