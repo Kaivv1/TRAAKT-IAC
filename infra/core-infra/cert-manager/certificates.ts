@@ -68,7 +68,7 @@ export const createVaultCaCert = (namespace: pulumi.Output<string>, dependsOn: p
 
 export const createVaultCertificate = (namespace: pulumi.Output<string>, dependsOn: pulumi.Resource[]) => {
     return new k8s.apiextensions.CustomResource(
-        "tls-cert",
+        "tls-vault-cert",
         {
             apiVersion: "cert-manager.io/v1",
             kind: "Certificate",
